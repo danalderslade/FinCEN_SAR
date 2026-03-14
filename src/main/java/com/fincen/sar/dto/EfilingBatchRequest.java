@@ -27,9 +27,7 @@ public class EfilingBatchRequest {
     @Min(0)
     private Integer partyCount;
 
-    @Builder.Default
     private Integer activityAttachmentCount = 0;
 
-    @Builder.Default
     private Integer attachmentCount = 0;
 }

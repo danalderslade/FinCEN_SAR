@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -442,7 +443,17 @@ public class ActivityPatchService {
     public ActivityResponse patchSuspiciousActivity(Long activityId, PatchSuspiciousActivityRequest req) {
         Activity a = findActivity(activityId);
         SuspiciousActivity sa = a.getSuspiciousActivity();
-        if (sa == null) throw new ResourceNotFoundException("SuspiciousActivity for activity", activityId);
+        if (sa == null) {
+            sa = SuspiciousActivity.builder()
+                    .activity(a)
+                    .seqNum(1L)
+                    .suspiciousActivityFromDate(
+                            req.getSuspiciousActivityFromDate() != null
+                                    ? req.getSuspiciousActivityFromDate()
+                                    : LocalDate.now())
+                    .build();
+            a.setSuspiciousActivity(sa);
+        }
 
         if (req.getAmountUnknown()                  != null) sa.setAmountUnknown(req.getAmountUnknown());
         if (req.getNoAmountInvolved()               != null) sa.setNoAmountInvolved(req.getNoAmountInvolved());

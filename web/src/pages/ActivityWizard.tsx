@@ -639,11 +639,54 @@ function AssetsStep({
   onSaveAsset: (data: AssetRequest) => void
   onSaveAttr: (data: AssetAttributeRequest) => void
 }) {
-  const [assetTypeId, setAssetTypeId] = useState(1)
-  const [assetSubtypeId, setAssetSubtypeId] = useState(1)
+  const [assetTypeId, setAssetTypeId] = useState(5)
+  const [assetSubtypeId, setAssetSubtypeId] = useState(2)
   const [attrTypeId, setAttrTypeId] = useState(1)
   const [attrDesc, setAttrDesc] = useState('')
   const [mode, setMode] = useState<'asset' | 'attr'>('asset')
+
+  const ASSET_TYPES = [
+    { code: 5, label: 'Product type(s) involved' },
+    { code: 6, label: 'Instrument type(s)/payment mechanism(s)' },
+  ] as const
+
+  const ASSET_SUBTYPES: Record<number, { code: number; label: string }[]> = {
+    5: [
+      { code: 2, label: 'Bonds/Notes' },
+      { code: 3, label: 'Commercial mortgage' },
+      { code: 4, label: 'Commercial paper' },
+      { code: 5, label: 'Credit card' },
+      { code: 6, label: 'Debit card' },
+      { code: 46, label: 'Deposit Account' },
+      { code: 7, label: 'Forex transactions' },
+      { code: 8, label: 'Futures/Options on futures' },
+      { code: 9, label: 'Hedge fund' },
+      { code: 11, label: 'Home equity line of credit' },
+      { code: 10, label: 'Home equity loan' },
+      { code: 12, label: 'Insurance/Annuity products' },
+      { code: 47, label: 'Microcap securities' },
+      { code: 13, label: 'Mutual fund' },
+      { code: 14, label: 'Options on securities' },
+      { code: 16, label: 'Prepaid access' },
+      { code: 17, label: 'Residential mortgage' },
+      { code: 18, label: 'Security futures products' },
+      { code: 19, label: 'Stocks' },
+      { code: 20, label: 'Swap, hybrid or other derivative' },
+      { code: 30, label: 'Other (Product type)' },
+    ],
+    6: [
+      { code: 31, label: 'Bank/Cashier\'s check' },
+      { code: 32, label: 'Foreign currency' },
+      { code: 33, label: 'Funds transfer' },
+      { code: 34, label: 'Gaming instruments' },
+      { code: 35, label: 'Government payment' },
+      { code: 36, label: 'Money orders' },
+      { code: 37, label: 'Personal/Business check' },
+      { code: 38, label: 'Travelers checks' },
+      { code: 39, label: 'U.S. Currency' },
+      { code: 41, label: 'Other (Instrument/Payment mechanism)' },
+    ],
+  }
 
   function handleAsset(e: React.FormEvent) {
     e.preventDefault()
@@ -683,22 +726,31 @@ function AssetsStep({
         <form onSubmit={handleAsset}>
           <div className="form-grid">
             <div className="form-field">
-              <label>Asset Type ID</label>
-              <input
-                type="number"
+              <label>Asset Type</label>
+              <select
                 value={assetTypeId}
-                onChange={(e) => setAssetTypeId(Number(e.target.value))}
-                required
-              />
+                onChange={(e) => {
+                  const newType = Number(e.target.value)
+                  setAssetTypeId(newType)
+                  const subs = ASSET_SUBTYPES[newType]
+                  if (subs && subs.length > 0) setAssetSubtypeId(subs[0].code)
+                }}
+              >
+                {ASSET_TYPES.map((t) => (
+                  <option key={t.code} value={t.code}>{t.label}</option>
+                ))}
+              </select>
             </div>
             <div className="form-field">
-              <label>Asset Subtype ID</label>
-              <input
-                type="number"
+              <label>Asset Subtype</label>
+              <select
                 value={assetSubtypeId}
                 onChange={(e) => setAssetSubtypeId(Number(e.target.value))}
-                required
-              />
+              >
+                {(ASSET_SUBTYPES[assetTypeId] ?? []).map((s) => (
+                  <option key={s.code} value={s.code}>{s.label}</option>
+                ))}
+              </select>
             </div>
           </div>
           <div className="form-actions">

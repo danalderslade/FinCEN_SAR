@@ -71,7 +71,7 @@ INSERT INTO ref_primary_regulator_type VALUES
     (99, 'Not Applicable');
 
 CREATE TABLE ref_party_name_type (
-    code                    CHAR(3) PRIMARY KEY,
+    code                    VARCHAR(3) PRIMARY KEY,
     description             VARCHAR(50) NOT NULL
 );
 
@@ -81,7 +81,7 @@ INSERT INTO ref_party_name_type VALUES
     ('AKA', 'Also Known As');
 
 CREATE TABLE ref_phone_number_type (
-    code                    CHAR(1) PRIMARY KEY,
+    code                    VARCHAR(1) PRIMARY KEY,
     description             VARCHAR(30) NOT NULL
 );
 
@@ -158,7 +158,7 @@ INSERT INTO ref_organization_subtype VALUES
     (1999, 'Other (Casino/Card club)', 1);
 
 CREATE TABLE ref_electronic_address_type (
-    code                    CHAR(1) PRIMARY KEY,
+    code                    VARCHAR(1) PRIMARY KEY,
     description             VARCHAR(30) NOT NULL
 );
 
@@ -385,7 +385,7 @@ CREATE TABLE efiling_batch (
     party_count                     INTEGER NOT NULL,
     activity_attachment_count       INTEGER NOT NULL DEFAULT 0,
     attachment_count                INTEGER NOT NULL DEFAULT 0,
-    form_type_code                  CHAR(4) NOT NULL DEFAULT 'SARX',
+    form_type_code                  VARCHAR(4) NOT NULL DEFAULT 'SARX',
     created_at                      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at                      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT chk_form_type CHECK (form_type_code = 'SARX')
@@ -396,10 +396,10 @@ CREATE TABLE activity (
     id                              BIGSERIAL PRIMARY KEY,
     efiling_batch_id                BIGINT NOT NULL REFERENCES efiling_batch(id),
     seq_num                         BIGINT NOT NULL,                    -- XML SeqNum attribute (unique per batch)
-    efiling_prior_document_number   CHAR(14),                          -- Item 1e: 14-digit BSA ID or '00000000000000'
+    efiling_prior_document_number   VARCHAR(14),                          -- Item 1e: 14-digit BSA ID or '00000000000000'
     filing_date                     DATE NOT NULL,                     -- Item 95: Date filed
     filing_institution_note_to_fincen VARCHAR(50),                    -- Item 2: Optional note to FinCEN
-    bsa_identifier                  CHAR(14),                         -- Assigned by FinCEN on acknowledgement
+    bsa_identifier                  VARCHAR(14),                         -- Assigned by FinCEN on acknowledgement
     created_at                      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at                      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT uq_activity_seq_num UNIQUE (efiling_batch_id, seq_num)
@@ -480,7 +480,7 @@ CREATE TABLE party_name (
     id                              BIGSERIAL PRIMARY KEY,
     party_id                        BIGINT NOT NULL REFERENCES party(id),
     seq_num                         BIGINT NOT NULL,
-    party_name_type_code            CHAR(3) NOT NULL REFERENCES ref_party_name_type(code),
+    party_name_type_code            VARCHAR(3) NOT NULL REFERENCES ref_party_name_type(code),
 
     -- For non-Subject parties (Transmitter, Filing Institution, etc.)
     raw_party_full_name             VARCHAR(150),
@@ -517,9 +517,9 @@ CREATE TABLE address (
     -- Address fields
     raw_street_address1             VARCHAR(100),                      -- Items 11, 61, 69, 82
     raw_city                        VARCHAR(50),                       -- Items 12, 62, 71, 83
-    raw_state_code                  CHAR(2),                           -- Items 13, 63, 72, 84
+    raw_state_code                  VARCHAR(2),                           -- Items 13, 63, 72, 84
     raw_zip_code                    VARCHAR(9),                        -- Items 14, 64, 73, 85
-    raw_country_code                CHAR(2),                           -- Items 15, 65, 74, 86 (ISO 3166-2)
+    raw_country_code                VARCHAR(2),                           -- Items 15, 65, 74, 86 (ISO 3166-2)
 
     CONSTRAINT uq_address_seq_num UNIQUE (party_id, seq_num)
 );
@@ -536,7 +536,7 @@ CREATE TABLE phone_number (
     seq_num                         BIGINT NOT NULL,
     phone_number_text               VARCHAR(16),                       -- Items 21, 91, 94; transmitter is 10 digits
     phone_number_extension          VARCHAR(6),                        -- Items 21a, 91a, 94a
-    phone_number_type_code          CHAR(1) REFERENCES ref_phone_number_type(code), -- Item 20 (Subject only)
+    phone_number_type_code          VARCHAR(1) REFERENCES ref_phone_number_type(code), -- Item 20 (Subject only)
 
     CONSTRAINT uq_phone_seq_num UNIQUE (party_id, seq_num)
 );
@@ -557,8 +557,8 @@ CREATE TABLE party_identification (
 
     -- Subject form-of-identification fields (Item 18)
     identification_present_unknown  BOOLEAN,                           -- Item 18a
-    other_issuer_country            CHAR(2),                           -- Item 18g (ISO 3166-2)
-    other_issuer_state              CHAR(2),                           -- Item 18f
+    other_issuer_country            VARCHAR(2),                           -- Item 18g (ISO 3166-2)
+    other_issuer_state              VARCHAR(2),                           -- Item 18f
     other_party_identification_type_text VARCHAR(50),                 -- Item 18z
 
     CONSTRAINT uq_party_id_seq_num UNIQUE (party_id, seq_num)
@@ -604,7 +604,7 @@ CREATE TABLE electronic_address (
     id                              BIGSERIAL PRIMARY KEY,
     party_id                        BIGINT NOT NULL REFERENCES party(id),
     seq_num                         BIGINT NOT NULL,
-    electronic_address_type_code    CHAR(1) NOT NULL REFERENCES ref_electronic_address_type(code), -- E or U
+    electronic_address_type_code    VARCHAR(1) NOT NULL REFERENCES ref_electronic_address_type(code), -- E or U
     electronic_address_text         VARCHAR(517) NOT NULL,            -- Email ≤50 chars; URL ≤517 chars
 
     CONSTRAINT uq_electronic_address_seq_num UNIQUE (party_id, seq_num)
@@ -671,9 +671,9 @@ CREATE TABLE branch_address (
     seq_num                         BIGINT NOT NULL,
     raw_street_address1             VARCHAR(100),                      -- Item 69
     raw_city                        VARCHAR(50),                       -- Item 71
-    raw_state_code                  CHAR(2),                           -- Item 72
+    raw_state_code                  VARCHAR(2),                           -- Item 72
     raw_zip_code                    VARCHAR(9),                        -- Item 73
-    raw_country_code                CHAR(2) NOT NULL,                  -- Item 74 (required)
+    raw_country_code                VARCHAR(2) NOT NULL,                  -- Item 74 (required)
 
     CONSTRAINT uq_branch_address_seq_num UNIQUE (branch_party_id, seq_num)
 );
@@ -868,8 +868,8 @@ CREATE TABLE activity_narrative_information (
 CREATE TABLE efiling_activity_acknowledgement (
     id                              BIGSERIAL PRIMARY KEY,
     activity_id                     BIGINT NOT NULL UNIQUE REFERENCES activity(id),
-    bsa_identifier                  CHAR(14),
-    status_code                     CHAR(1),
+    bsa_identifier                  VARCHAR(14),
+    status_code                     VARCHAR(1),
     acknowledged_at                 TIMESTAMPTZ
 );
 

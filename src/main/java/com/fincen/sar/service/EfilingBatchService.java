@@ -20,14 +20,17 @@ public class EfilingBatchService {
 
     @Transactional
     public EfilingBatchResponse create(EfilingBatchRequest req) {
-        EfilingBatch batch = EfilingBatch.builder()
+        var builder = EfilingBatch.builder()
                 .activityCount(req.getActivityCount())
                 .totalAmount(req.getTotalAmount())
-                .partyCount(req.getPartyCount())
-                .activityAttachmentCount(req.getActivityAttachmentCount())
-                .attachmentCount(req.getAttachmentCount())
-                .build();
-        return mapper.toBatchResponse(repo.save(batch));
+                .partyCount(req.getPartyCount());
+        if (req.getActivityAttachmentCount() != null) {
+            builder.activityAttachmentCount(req.getActivityAttachmentCount());
+        }
+        if (req.getAttachmentCount() != null) {
+            builder.attachmentCount(req.getAttachmentCount());
+        }
+        return mapper.toBatchResponse(repo.save(builder.build()));
     }
 
     @Transactional(readOnly = true)
