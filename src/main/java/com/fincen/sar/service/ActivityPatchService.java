@@ -80,7 +80,7 @@ public class ActivityPatchService {
             a.setActivityAssociation(aa);
         }
         if (req.getInitialReportIndicator()    != null) aa.setInitialReportIndicator(req.getInitialReportIndicator());
-        if (req.getCorrectAmendsPriorReport()  != null) aa.setCorrectAmendsPriorReport(req.getCorrectAmendsPriorReport());
+        if (req.getCorrectsAmendsPriorReport() != null) aa.setCorrectsAmendsPriorReport(req.getCorrectsAmendsPriorReport());
         if (req.getContinuingActivityReport()  != null) aa.setContinuingActivityReport(req.getContinuingActivityReport());
         if (req.getJointReportIndicator()      != null) aa.setJointReportIndicator(req.getJointReportIndicator());
         return mapper.toActivityResponse(activityRepo.save(a));
@@ -196,6 +196,7 @@ public class ActivityPatchService {
         Party p = findParty(partyId);
         partyAddressRepo.delete(partyAddressRepo.findById(addressId)
                 .orElseThrow(() -> new ResourceNotFoundException("PartyAddress", addressId)));
+        if (p.getAddresses() != null) p.getAddresses().removeIf(a -> a.getId().equals(addressId));
         return activityResponse(p);
     }
 
@@ -283,6 +284,7 @@ public class ActivityPatchService {
         if (req.getNaicsCode()             != null) occ.setNaicsCode(req.getNaicsCode());
         if (req.getOccupationBusinessText() != null) occ.setOccupationBusinessText(req.getOccupationBusinessText());
         occupationRepo.save(occ);
+        p.setOccupation(occ);
         return activityResponse(p);
     }
 

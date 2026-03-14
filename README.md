@@ -1,6 +1,6 @@
-# FinCEN SAR Filing API
+# FinCEN SAR Filing Platform
 
-Spring Boot 3.3 microservice providing a REST API to **insert and delete** FinCEN SAR (Suspicious Activity Report) records following the XML Schema 2.0 specification.
+Spring Boot and React full-stack application for FinCEN SAR (Suspicious Activity Report) workflows. The backend exposes a REST API over the SAR domain model, and the frontend provides a browser-based workspace for batch intake and activity drafting.
 
 ---
 
@@ -9,12 +9,17 @@ Spring Boot 3.3 microservice providing a REST API to **insert and delete** FinCE
 ```
 PostgreSQL ← Flyway migration (V1__initial_schema.sql)
               ↕
-Spring Boot 3.3 / Java 21
+Spring Boot 4 / Java 21
   ├── Controllers  (REST endpoints)
   ├── Services     (business logic + entity builders)
   ├── Mapper       (entity → response DTO)
   ├── Repositories (Spring Data JPA)
   └── Entities     (JPA, 44 tables)
+
+React 19 / Vite / TypeScript
+  ├── Workspace dashboard
+  ├── Batch and activity API client
+  └── Browser dev server with /api proxy to Spring Boot
 ```
 
 ---
@@ -39,14 +44,27 @@ docker run -d \
 
 ### 2. Run the service
 ```bash
-cd sar-api
 mvn spring-boot:run
 ```
 The API starts at **http://localhost:8080/api/v1**
 
-### 3. Run tests
+### 3. Run the frontend
+```bash
+cd web
+npm install
+npm run dev
+```
+The UI starts at **http://localhost:5173** and proxies `/api/*` requests to the Spring Boot service.
+
+### 4. Run tests
 ```bash
 mvn test
+```
+
+### 5. Build the frontend
+```bash
+cd web
+npm run build
 ```
 
 ---

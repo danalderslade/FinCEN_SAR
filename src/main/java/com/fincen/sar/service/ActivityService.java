@@ -80,7 +80,7 @@ public class ActivityService {
                     .activity(activity)
                     .seqNum(ar.getSeqNum())
                     .initialReportIndicator(ar.getInitialReportIndicator())
-                    .correctsAmendsPriorReport(ar.getCorrectAmendsPriorReport())
+                    .correctsAmendsPriorReport(ar.getCorrectsAmendsPriorReport())
                     .continuingActivityReport(ar.getContinuingActivityReport())
                     .jointReportIndicator(ar.getJointReportIndicator())
                     .build();

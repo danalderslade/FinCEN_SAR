@@ -10,7 +10,7 @@ import lombok.*;
 @Table(name = "party_name",
     uniqueConstraints = @UniqueConstraint(columnNames = {"party_id", "seq_num"}))
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-class PartyName {
+public class PartyName {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;

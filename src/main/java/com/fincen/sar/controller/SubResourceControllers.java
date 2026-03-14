@@ -93,23 +93,15 @@ class SuspiciousActivityController {
 // ══════════════════════════════════════════════════════════════════════════════
 
 /**
- * POST   /activities/{activityId}/ip-addresses  — add IP address record
  * GET    /activities/{activityId}/ip-addresses  — list
  * DELETE /ip-addresses/{id}                     — delete one
+ * (POST is handled by IpAddressPatchController in PatchControllers)
  */
 @RestController
 @RequiredArgsConstructor
 class IpAddressController {
 
     private final IpAddressService service;
-
-    @PostMapping("/activities/{activityId}/ip-addresses")
-    public ResponseEntity<IpAddressResponse> create(
-            @PathVariable Long activityId,
-            @Valid @RequestBody IpAddressRequest req) {
-        IpAddressResponse created = service.add(activityId, req);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
-    }
 
     @GetMapping("/activities/{activityId}/ip-addresses")
     public List<IpAddressResponse> list(@PathVariable Long activityId) {
@@ -128,23 +120,15 @@ class IpAddressController {
 // ══════════════════════════════════════════════════════════════════════════════
 
 /**
- * POST   /activities/{activityId}/narratives  — add a narrative block (up to 5)
  * GET    /activities/{activityId}/narratives  — list in sequence order
  * DELETE /narratives/{id}                     — delete one block
+ * (POST is handled by NarrativePatchController in PatchControllers)
  */
 @RestController
 @RequiredArgsConstructor
 class NarrativeController {
 
     private final NarrativeService service;
-
-    @PostMapping("/activities/{activityId}/narratives")
-    public ResponseEntity<NarrativeResponse> create(
-            @PathVariable Long activityId,
-            @Valid @RequestBody NarrativeRequest req) {
-        NarrativeResponse created = service.add(activityId, req);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
-    }
 
     @GetMapping("/activities/{activityId}/narratives")
     public List<NarrativeResponse> list(@PathVariable Long activityId) {

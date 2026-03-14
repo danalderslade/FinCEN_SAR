@@ -72,7 +72,7 @@ public class SarMapper {
         return ActivityAssociationResponse.builder()
                 .id(aa.getId())
                 .initialReportIndicator(aa.getInitialReportIndicator())
-                .correctsAmendsPriorReport(aa.getCorrectAmendsPriorReport())
+                .correctsAmendsPriorReport(aa.getCorrectsAmendsPriorReport())
                 .continuingActivityReport(aa.getContinuingActivityReport())
                 .jointReportIndicator(aa.getJointReportIndicator())
                 .build();
@@ -247,6 +247,10 @@ public class SarMapper {
     }
 
     // ── SuspiciousActivity ────────────────────────────────────────────────────
+
+    public SuspiciousActivityResponse toSaResponsePublic(SuspiciousActivity sa) {
+        return toSaResponse(sa);
+    }
 
     private SuspiciousActivityResponse toSaResponse(SuspiciousActivity sa) {
         if (sa == null) return null;

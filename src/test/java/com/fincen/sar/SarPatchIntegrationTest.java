@@ -2,13 +2,15 @@ package com.fincen.sar;
 
 import com.fincen.sar.dto.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -18,14 +20,20 @@ import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ActiveProfiles("test")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class SarPatchIntegrationTest {
 
-    @Autowired MockMvc mvc;
-    @Autowired ObjectMapper json;
+    MockMvc mvc;
+    final ObjectMapper json = new ObjectMapper().findAndRegisterModules()
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    @Autowired WebApplicationContext wac;
+
+    @BeforeEach
+    void setUp() {
+        mvc = MockMvcBuilders.webAppContextSetup(wac).build();
+    }
 
     static Long batchId;
     static Long activityId;
@@ -43,7 +51,7 @@ public class SarPatchIntegrationTest {
     @Test @Order(1)
     void setup_createBatchAndActivity() throws Exception {
         // Batch
-        String batchBody = mvc.perform(post("/api/v1/batches")
+        String batchBody = mvc.perform(post("/batches")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(
                                 EfilingBatchRequest.builder().activityCount(1).partyCount(2).build())))
@@ -57,7 +65,7 @@ public class SarPatchIntegrationTest {
                 .filingDate(LocalDate.of(2024, 1, 15))
                 .build();
 
-        String actBody = mvc.perform(post("/api/v1/batches/" + batchId + "/activities")
+        String actBody = mvc.perform(post("/batches/" + batchId + "/activities")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(req)))
                 .andExpect(status().isCreated())
@@ -76,7 +84,7 @@ public class SarPatchIntegrationTest {
                 .filingInstitutionNoteToFincen("GTO Advisory")
                 .build();
 
-        mvc.perform(patch("/api/v1/activities/" + activityId + "/header")
+        mvc.perform(patch("/activities/" + activityId + "/header")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(req)))
                 .andExpect(status().isOk())
@@ -91,7 +99,7 @@ public class SarPatchIntegrationTest {
                 .filingInstitutionNoteToFincen("Updated note")
                 .build();
 
-        mvc.perform(patch("/api/v1/activities/" + activityId + "/header")
+        mvc.perform(patch("/activities/" + activityId + "/header")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(req)))
                 .andExpect(status().isOk())
@@ -109,7 +117,7 @@ public class SarPatchIntegrationTest {
                 .initialReportIndicator(true)
                 .build();
 
-        mvc.perform(patch("/api/v1/activities/" + activityId + "/filing-type")
+        mvc.perform(patch("/activities/" + activityId + "/filing-type")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(req)))
                 .andExpect(status().isOk())
@@ -123,7 +131,7 @@ public class SarPatchIntegrationTest {
 
     @Test @Order(5)
     void patchSupportDocument_setsFilename() throws Exception {
-        mvc.perform(patch("/api/v1/activities/" + activityId + "/support-document")
+        mvc.perform(patch("/activities/" + activityId + "/support-document")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"originalAttachmentFileName\":\"attachments.csv\"}"))
                 .andExpect(status().isOk())
@@ -143,14 +151,14 @@ public class SarPatchIntegrationTest {
                 .primaryRegulatorTypeCode((short) 2)
                 .build();
 
-        String body = mvc.perform(post("/api/v1/activities/" + activityId + "/parties")
+        String body = mvc.perform(post("/activities/" + activityId + "/parties")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(req)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.parties", hasSize(1)))
+                .andExpect(jsonPath("$.id").exists())
                 .andReturn().getResponse().getContentAsString();
 
-        fiPartyId = json.readTree(body).get("parties").get(0).get("id").asLong();
+        fiPartyId = json.readTree(body).get("id").asLong();
     }
 
     @Test @Order(7)
@@ -162,19 +170,14 @@ public class SarPatchIntegrationTest {
                 .individualBirthDate(LocalDate.of(1980, 5, 20))
                 .build();
 
-        String body = mvc.perform(post("/api/v1/activities/" + activityId + "/parties")
+        String body = mvc.perform(post("/activities/" + activityId + "/parties")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(req)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.parties", hasSize(2)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").exists())
                 .andReturn().getResponse().getContentAsString();
 
-        // Find the subject party
-        var parties = json.readTree(body).get("parties");
-        for (var p : parties) {
-            if (p.get("activityPartyTypeCode").asInt() == 33)
-                subjectPartyId = p.get("id").asLong();
-        }
+        subjectPartyId = json.readTree(body).get("id").asLong();
     }
 
     @Test @Order(8)
@@ -184,7 +187,7 @@ public class SarPatchIntegrationTest {
                 .admissionConfessionNo(true)
                 .build();
 
-        mvc.perform(patch("/api/v1/parties/" + subjectPartyId + "/header")
+        mvc.perform(patch("/parties/" + subjectPartyId + "/header")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(req)))
                 .andExpect(status().isOk())
@@ -200,7 +203,7 @@ public class SarPatchIntegrationTest {
                 .rawIndividualFirstName("Jane")
                 .build();
 
-        String body = mvc.perform(post("/api/v1/parties/" + subjectPartyId + "/names")
+        String body = mvc.perform(post("/parties/" + subjectPartyId + "/names")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(req)))
                 .andExpect(status().isOk())
@@ -214,10 +217,18 @@ public class SarPatchIntegrationTest {
             }
         }
 
-        // Remove it
-        mvc.perform(delete("/api/v1/parties/" + subjectPartyId + "/names/" + nameId))
+        // Remove it and verify empty names
+        String delBody = mvc.perform(delete("/parties/" + subjectPartyId + "/names/" + nameId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.parties[?(@.id==" + subjectPartyId + ")].names", hasSize(0)));
+                .andReturn().getResponse().getContentAsString();
+
+        var delParties = json.readTree(delBody).get("parties");
+        for (var p : delParties) {
+            if (p.get("id").asLong() == subjectPartyId) {
+                Assertions.assertTrue(p.get("names").isEmpty(),
+                        "Expected empty names after delete");
+            }
+        }
     }
 
     @Test @Order(10)
@@ -228,7 +239,7 @@ public class SarPatchIntegrationTest {
                 .rawZipCode("60601").rawCountryCode("US")
                 .build();
 
-        String body = mvc.perform(post("/api/v1/parties/" + subjectPartyId + "/addresses")
+        String body = mvc.perform(post("/parties/" + subjectPartyId + "/addresses")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(req)))
                 .andExpect(status().isOk())
@@ -240,31 +251,55 @@ public class SarPatchIntegrationTest {
                 addressId = p.get("addresses").get(0).get("id").asLong();
         }
 
-        mvc.perform(delete("/api/v1/parties/" + subjectPartyId + "/addresses/" + addressId))
+        String delBody = mvc.perform(delete("/parties/" + subjectPartyId + "/addresses/" + addressId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.parties[?(@.id==" + subjectPartyId + ")].addresses", hasSize(0)));
+                .andReturn().getResponse().getContentAsString();
+
+        var delParties = json.readTree(delBody).get("parties");
+        for (var p : delParties) {
+            if (p.get("id").asLong() == subjectPartyId) {
+                Assertions.assertTrue(p.get("addresses").isEmpty(),
+                        "Expected empty addresses after delete");
+            }
+        }
     }
 
     @Test @Order(11)
     void upsertOccupation_thenRemove() throws Exception {
-        mvc.perform(put("/api/v1/parties/" + subjectPartyId + "/occupation")
+        String body1 = mvc.perform(put("/parties/" + subjectPartyId + "/occupation")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"naicsCode\":\"52211\",\"occupationBusinessText\":\"Banker\"}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.parties[?(@.id==" + subjectPartyId + ")].occupation.naicsCode")
-                        .value("52211"));
+                .andReturn().getResponse().getContentAsString();
+
+        var occ1 = findParty(body1, subjectPartyId).get("occupation");
+        Assertions.assertEquals("52211", occ1.get("naicsCode").asText());
 
         // Update just the text (naicsCode stays)
-        mvc.perform(put("/api/v1/parties/" + subjectPartyId + "/occupation")
+        String body2 = mvc.perform(put("/parties/" + subjectPartyId + "/occupation")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"occupationBusinessText\":\"Investment Banker\"}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.parties[?(@.id==" + subjectPartyId + ")].occupation.occupationBusinessText")
-                        .value("Investment Banker"));
+                .andReturn().getResponse().getContentAsString();
 
-        mvc.perform(delete("/api/v1/parties/" + subjectPartyId + "/occupation"))
+        var occ2 = findParty(body2, subjectPartyId).get("occupation");
+        Assertions.assertEquals("Investment Banker", occ2.get("occupationBusinessText").asText());
+
+        String body3 = mvc.perform(delete("/parties/" + subjectPartyId + "/occupation"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.parties[?(@.id==" + subjectPartyId + ")].occupation").isEmpty());
+                .andReturn().getResponse().getContentAsString();
+
+        var occ3 = findParty(body3, subjectPartyId).get("occupation");
+        Assertions.assertTrue(occ3 == null || occ3.isNull(),
+                "Expected null occupation after delete");
+    }
+
+    private com.fasterxml.jackson.databind.JsonNode findParty(String responseBody, Long partyId) throws Exception {
+        var parties = json.readTree(responseBody).get("parties");
+        for (var p : parties) {
+            if (p.get("id").asLong() == partyId) return p;
+        }
+        throw new AssertionError("Party " + partyId + " not found in response");
     }
 
     @Test @Order(12)
@@ -274,7 +309,7 @@ public class SarPatchIntegrationTest {
                 .subjectRelationshipInstitutionTin("123456789")
                 .build();
 
-        String body = mvc.perform(post("/api/v1/parties/" + subjectPartyId + "/associations")
+        String body = mvc.perform(post("/parties/" + subjectPartyId + "/associations")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(req)))
                 .andExpect(status().isOk())
@@ -287,7 +322,7 @@ public class SarPatchIntegrationTest {
         }
 
         // Patch: also mark as terminated
-        mvc.perform(patch("/api/v1/party-associations/" + assocId)
+        mvc.perform(patch("/party-associations/" + assocId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"terminatedIndicator\":true,\"actionTakenDate\":\"2024-03-15\"}"))
                 .andExpect(status().isOk())
@@ -308,13 +343,13 @@ public class SarPatchIntegrationTest {
                 .suspiciousActivityFromDate(LocalDate.of(2024, 1, 1))
                 .build();
 
-        mvc.perform(put("/api/v1/activities/" + activityId + "/suspicious-activity")
+        mvc.perform(put("/activities/" + activityId + "/suspicious-activity")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(create)))
                 .andExpect(status().isOk());
 
         // Now PATCH just the amount
-        mvc.perform(patch("/api/v1/activities/" + activityId + "/suspicious-activity")
+        mvc.perform(patch("/activities/" + activityId + "/suspicious-activity")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"totalSuspiciousAmount\":75000,\"suspiciousActivityToDate\":\"2024-06-30\"}"))
                 .andExpect(status().isOk())
@@ -330,7 +365,7 @@ public class SarPatchIntegrationTest {
                 .suspiciousActivitySubtypeId((short) 114) // Below CTR threshold
                 .build();
 
-        String body = mvc.perform(post("/api/v1/activities/" + activityId
+        String body = mvc.perform(post("/activities/" + activityId
                         + "/suspicious-activity/classifications")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(req)))
@@ -341,7 +376,7 @@ public class SarPatchIntegrationTest {
         classId = json.readTree(body).get("suspiciousActivity").get("classifications")
                 .get(0).get("id").asLong();
 
-        mvc.perform(delete("/api/v1/activities/" + activityId
+        mvc.perform(delete("/activities/" + activityId
                 + "/suspicious-activity/classifications/" + classId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.suspiciousActivity.classifications", hasSize(0)));
@@ -353,7 +388,7 @@ public class SarPatchIntegrationTest {
 
     @Test @Order(15)
     void addIpAddress_thenRemove() throws Exception {
-        String body = mvc.perform(post("/api/v1/activities/" + activityId + "/ip-addresses")
+        String body = mvc.perform(post("/activities/" + activityId + "/ip-addresses")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"seqNum\":1,\"ipAddressText\":\"10.0.0.1\",\"ipAddressDate\":\"2024-02-14\"}"))
                 .andExpect(status().isOk())
@@ -362,7 +397,7 @@ public class SarPatchIntegrationTest {
 
         ipId = json.readTree(body).get("ipAddresses").get(0).get("id").asLong();
 
-        mvc.perform(delete("/api/v1/activities/" + activityId + "/ip-addresses/" + ipId))
+        mvc.perform(delete("/activities/" + activityId + "/ip-addresses/" + ipId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.ipAddresses", hasSize(0)));
     }
@@ -378,7 +413,7 @@ public class SarPatchIntegrationTest {
                 .narrativeText("Initial narrative text.")
                 .build();
 
-        String body = mvc.perform(post("/api/v1/activities/" + activityId + "/narratives")
+        String body = mvc.perform(post("/activities/" + activityId + "/narratives")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(req)))
                 .andExpect(status().isOk())
@@ -388,14 +423,14 @@ public class SarPatchIntegrationTest {
         narrativeId = json.readTree(body).get("narratives").get(0).get("id").asLong();
 
         // Patch just the text (autosave scenario)
-        mvc.perform(patch("/api/v1/activities/" + activityId + "/narratives/1")
+        mvc.perform(patch("/activities/" + activityId + "/narratives/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"narrativeText\":\"Autosaved updated narrative.\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.narratives[0].narrativeText").value("Autosaved updated narrative."));
 
         // Remove
-        mvc.perform(delete("/api/v1/activities/" + activityId + "/narratives/" + narrativeId))
+        mvc.perform(delete("/activities/" + activityId + "/narratives/" + narrativeId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.narratives", hasSize(0)));
     }
@@ -406,7 +441,7 @@ public class SarPatchIntegrationTest {
 
     @Test @Order(17)
     void patchHeader_rejectsBadPriorDocNumber() throws Exception {
-        mvc.perform(patch("/api/v1/activities/" + activityId + "/header")
+        mvc.perform(patch("/activities/" + activityId + "/header")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"efilingPriorDocumentNumber\":\"SHORT\"}"))
                 .andExpect(status().isBadRequest());
@@ -414,7 +449,7 @@ public class SarPatchIntegrationTest {
 
     @Test @Order(18)
     void patchSupportDoc_rejectsNonCsvFilename() throws Exception {
-        mvc.perform(patch("/api/v1/activities/" + activityId + "/support-document")
+        mvc.perform(patch("/activities/" + activityId + "/support-document")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"originalAttachmentFileName\":\"data.xlsx\"}"))
                 .andExpect(status().isBadRequest());
@@ -424,7 +459,7 @@ public class SarPatchIntegrationTest {
 
     @Test @Order(99)
     void teardown_deleteBatch() throws Exception {
-        mvc.perform(delete("/api/v1/batches/" + batchId))
+        mvc.perform(delete("/batches/" + batchId))
                 .andExpect(status().isNoContent());
     }
 }

@@ -2,28 +2,37 @@ package com.fincen.sar;
 
 import com.fincen.sar.dto.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.*;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDate;
 import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ActiveProfiles("test")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class SarApiIntegrationTest {
 
-    @Autowired MockMvc mvc;
-    @Autowired ObjectMapper json;
+    MockMvc mvc;
+    final ObjectMapper json = new ObjectMapper().findAndRegisterModules()
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    @Autowired WebApplicationContext wac;
+
+    @BeforeEach
+    void setUp() {
+        mvc = MockMvcBuilders.webAppContextSetup(wac).build();
+    }
 
     static Long batchId;
     static Long activityId;
@@ -35,9 +44,10 @@ public class SarApiIntegrationTest {
         EfilingBatchRequest req = EfilingBatchRequest.builder()
                 .activityCount(1).partyCount(2).build();
 
-        String body = mvc.perform(post("/api/v1/batches")
+        String body = mvc.perform(post("/batches")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(req)))
+                .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.formTypeCode").value("SARX"))
@@ -48,7 +58,7 @@ public class SarApiIntegrationTest {
 
     @Test @Order(2)
     void getBatch() throws Exception {
-        mvc.perform(get("/api/v1/batches/" + batchId))
+        mvc.perform(get("/batches/" + batchId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(batchId));
     }
@@ -125,7 +135,7 @@ public class SarApiIntegrationTest {
                         .build()))
                 .build();
 
-        String body = mvc.perform(post("/api/v1/batches/" + batchId + "/activities")
+        String body = mvc.perform(post("/batches/" + batchId + "/activities")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(req)))
                 .andExpect(status().isCreated())
@@ -140,7 +150,7 @@ public class SarApiIntegrationTest {
 
     @Test @Order(4)
     void getActivity() throws Exception {
-        mvc.perform(get("/api/v1/activities/" + activityId))
+        mvc.perform(get("/activities/" + activityId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(activityId))
                 .andExpect(jsonPath("$.parties").isArray());
@@ -153,11 +163,12 @@ public class SarApiIntegrationTest {
                 .ipAddressDate(LocalDate.of(2024, 3, 10))
                 .build();
 
-        mvc.perform(post("/api/v1/activities/" + activityId + "/ip-addresses")
+        mvc.perform(post("/activities/" + activityId + "/ip-addresses")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(req)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.ipAddressText").value("192.168.1.100"));
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.ipAddresses[0].ipAddressText").value("192.168.1.100"));
     }
 
     @Test @Order(6)
@@ -167,15 +178,16 @@ public class SarApiIntegrationTest {
                 .narrativeText("Additional narrative block with supplemental details.")
                 .build();
 
-        mvc.perform(post("/api/v1/activities/" + activityId + "/narratives")
+        mvc.perform(post("/activities/" + activityId + "/narratives")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(req)))
-                .andExpect(status().isCreated());
+                .andDo(print())
+                .andExpect(status().isOk());
     }
 
     @Test @Order(7)
     void listActivitiesForBatch() throws Exception {
-        mvc.perform(get("/api/v1/batches/" + batchId + "/activities"))
+        mvc.perform(get("/batches/" + batchId + "/activities"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(activityId));
     }
@@ -184,19 +196,19 @@ public class SarApiIntegrationTest {
 
     @Test @Order(8)
     void deleteActivity() throws Exception {
-        mvc.perform(delete("/api/v1/activities/" + activityId))
+        mvc.perform(delete("/activities/" + activityId))
                 .andExpect(status().isNoContent());
 
-        mvc.perform(get("/api/v1/activities/" + activityId))
+        mvc.perform(get("/activities/" + activityId))
                 .andExpect(status().isNotFound());
     }
 
     @Test @Order(9)
     void deleteBatch() throws Exception {
-        mvc.perform(delete("/api/v1/batches/" + batchId))
+        mvc.perform(delete("/batches/" + batchId))
                 .andExpect(status().isNoContent());
 
-        mvc.perform(get("/api/v1/batches/" + batchId))
+        mvc.perform(get("/batches/" + batchId))
                 .andExpect(status().isNotFound());
     }
 
@@ -204,7 +216,7 @@ public class SarApiIntegrationTest {
 
     @Test @Order(10)
     void rejectsBatchWithMissingRequiredFields() throws Exception {
-        mvc.perform(post("/api/v1/batches")
+        mvc.perform(post("/batches")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest());
@@ -212,7 +224,7 @@ public class SarApiIntegrationTest {
 
     @Test @Order(11)
     void returns404ForMissingBatch() throws Exception {
-        mvc.perform(get("/api/v1/batches/999999"))
+        mvc.perform(get("/batches/999999"))
                 .andExpect(status().isNotFound());
     }
 }
