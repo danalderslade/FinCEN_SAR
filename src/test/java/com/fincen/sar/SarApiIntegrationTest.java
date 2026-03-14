@@ -189,7 +189,8 @@ public class SarApiIntegrationTest {
     void listActivitiesForBatch() throws Exception {
         mvc.perform(get("/batches/" + batchId + "/activities"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(activityId));
+                .andExpect(jsonPath("$.content[0].id").value(activityId))
+                .andExpect(jsonPath("$.totalElements").value(1));
     }
 
     // ── Delete ────────────────────────────────────────────────────────────────

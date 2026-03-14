@@ -6,6 +6,8 @@ import com.fincen.sar.exception.ResourceNotFoundException;
 import com.fincen.sar.mapper.SarMapper;
 import com.fincen.sar.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,6 +46,19 @@ public class ActivityService {
                 .stream().map(mapper::toActivitySummary).toList();
     }
 
+    @Transactional(readOnly = true)
+    public PageResponse<ActivitySummary> listByBatch(Long batchId, Pageable pageable) {
+        Page<Activity> page = activityRepo.findByEfilingBatchId(batchId, pageable);
+        return PageResponse.<ActivitySummary>builder()
+                .content(page.getContent().stream().map(mapper::toActivitySummary).toList())
+                .page(page.getNumber())
+                .size(page.getSize())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .last(page.isLast())
+                .build();
+    }
+
     // ── Delete ────────────────────────────────────────────────────────────────
 
     @Transactional
@@ -55,7 +70,7 @@ public class ActivityService {
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private Activity findOrThrow(Long id) {
-        return activityRepo.findById(id)
+        return activityRepo.findByIdWithDetails(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Activity", id));
     }
 

@@ -11,10 +11,12 @@ import type {
   BatchSummary,
   CyberEventRequest,
   CyberEventResponse,
+  DashboardSummary,
   IpAddressRequest,
   IpAddressResponse,
   NarrativeRequest,
   NarrativeResponse,
+  PageResponse,
   PartyRequest,
   PartyResponse,
   PatchActivityHeaderRequest,
@@ -79,10 +81,29 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
   return undefined as unknown as T
 }
 
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+
+export function fetchDashboardSummary(): Promise<DashboardSummary> {
+  return request<DashboardSummary>(`${BASE}/dashboard/summary`)
+}
+
 // ── Batches ───────────────────────────────────────────────────────────────────
 
-export function fetchBatches(): Promise<BatchSummary[]> {
-  return request<BatchSummary[]>(`${BASE}/batches`)
+export function fetchBatches(params?: {
+  page?: number
+  size?: number
+  status?: string
+  sort?: string
+  direction?: string
+}): Promise<PageResponse<BatchSummary>> {
+  const query = new URLSearchParams()
+  if (params?.page !== undefined) query.set('page', String(params.page))
+  if (params?.size !== undefined) query.set('size', String(params.size))
+  if (params?.status) query.set('status', params.status)
+  if (params?.sort) query.set('sort', params.sort)
+  if (params?.direction) query.set('direction', params.direction)
+  const qs = query.toString()
+  return request<PageResponse<BatchSummary>>(`${BASE}/batches${qs ? `?${qs}` : ''}`)
 }
 
 export function fetchBatch(id: number): Promise<BatchResponse> {
@@ -102,8 +123,15 @@ export function deleteBatch(id: number): Promise<void> {
 
 // ── Activities ────────────────────────────────────────────────────────────────
 
-export function fetchActivities(batchId: number): Promise<ActivitySummary[]> {
-  return request<ActivitySummary[]>(`${BASE}/batches/${batchId}/activities`)
+export function fetchActivities(batchId: number, params?: {
+  page?: number
+  size?: number
+}): Promise<PageResponse<ActivitySummary>> {
+  const query = new URLSearchParams()
+  if (params?.page !== undefined) query.set('page', String(params.page))
+  if (params?.size !== undefined) query.set('size', String(params.size))
+  const qs = query.toString()
+  return request<PageResponse<ActivitySummary>>(`${BASE}/batches/${batchId}/activities${qs ? `?${qs}` : ''}`)
 }
 
 export function fetchActivity(id: number): Promise<ActivityResponse> {

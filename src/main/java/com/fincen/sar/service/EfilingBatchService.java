@@ -6,6 +6,8 @@ import com.fincen.sar.exception.ResourceNotFoundException;
 import com.fincen.sar.mapper.SarMapper;
 import com.fincen.sar.repository.EfilingBatchRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +43,22 @@ public class EfilingBatchService {
     @Transactional(readOnly = true)
     public List<EfilingBatchResponse> getAll() {
         return repo.findAll().stream().map(mapper::toBatchResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<EfilingBatchResponse> list(FilingStatus status, Pageable pageable) {
+        Page<EfilingBatch> page = (status != null)
+                ? repo.findByFilingStatus(status, pageable)
+                : repo.findAll(pageable);
+
+        return PageResponse.<EfilingBatchResponse>builder()
+                .content(page.getContent().stream().map(mapper::toBatchResponse).toList())
+                .page(page.getNumber())
+                .size(page.getSize())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .last(page.isLast())
+                .build();
     }
 
     @Transactional

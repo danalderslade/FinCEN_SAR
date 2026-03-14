@@ -1,20 +1,22 @@
 package com.fincen.sar.controller;
 
 import com.fincen.sar.dto.*;
+import com.fincen.sar.entity.FilingStatus;
 import com.fincen.sar.service.EfilingBatchService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.util.List;
-
 /**
  * POST   /batches              — create a new efiling batch
- * GET    /batches              — list all batches
+ * GET    /batches              — list batches (paginated, filterable by status)
  * GET    /batches/{id}         — get one batch (with activity summaries)
  * DELETE /batches/{id}         — delete batch + all child activities (cascade)
  */
@@ -36,10 +38,19 @@ public class EfilingBatchController {
                 .body(created);
     }
 
-    @Operation(summary = "List all e-filing batches")
+    @Operation(summary = "List batches (paginated, optionally filtered by status)")
     @GetMapping
-    public List<EfilingBatchResponse> getAll() {
-        return service.getAll();
+    public PageResponse<EfilingBatchResponse> list(
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt") String sort,
+            @RequestParam(defaultValue = "desc") String direction) {
+
+        Sort.Direction dir = "asc".equalsIgnoreCase(direction) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, Math.min(size, 100), Sort.by(dir, sort));
+        FilingStatus filingStatus = (status != null) ? FilingStatus.valueOf(status.toUpperCase()) : null;
+        return service.list(filingStatus, pageable);
     }
 
     @Operation(summary = "Get a batch by ID")

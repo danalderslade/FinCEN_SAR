@@ -6,15 +6,16 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.util.List;
-
 /**
  * POST   /batches/{batchId}/activities         — create a full SAR activity (all nested data in one call)
- * GET    /batches/{batchId}/activities         — list activity summaries for a batch
+ * GET    /batches/{batchId}/activities         — list activity summaries for a batch (paginated)
  * GET    /activities/{id}                      — get a single activity with all nested details
  * DELETE /activities/{id}                      — delete activity + all children (cascade)
  */
@@ -37,10 +38,18 @@ public class ActivityController {
                 .body(created);
     }
 
-    @Operation(summary = "List activity summaries for a batch")
+    @Operation(summary = "List activity summaries for a batch (paginated)")
     @GetMapping("/batches/{batchId}/activities")
-    public List<ActivitySummary> listByBatch(@PathVariable Long batchId) {
-        return service.listByBatch(batchId);
+    public PageResponse<ActivitySummary> listByBatch(
+            @PathVariable Long batchId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "seqNum") String sort,
+            @RequestParam(defaultValue = "asc") String direction) {
+
+        Sort.Direction dir = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, Math.min(size, 100), Sort.by(dir, sort));
+        return service.listByBatch(batchId, pageable);
     }
 
     @Operation(summary = "Get an activity with all nested details")

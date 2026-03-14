@@ -1,20 +1,27 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { fetchBatches } from '../api'
+import { fetchBatches, fetchDashboardSummary } from '../api'
 import { StatusBadge } from '../components/StatusBadge'
-import type { BatchSummary } from '../types'
+import type { BatchSummary, DashboardSummary } from '../types'
 import { formatDate } from '../util'
 
 export function Dashboard() {
-  const [batches, setBatches] = useState<BatchSummary[]>([])
+  const [summary, setSummary] = useState<DashboardSummary | null>(null)
+  const [recentBatches, setRecentBatches] = useState<BatchSummary[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let active = true
-    fetchBatches()
-      .then((data) => {
-        if (active) setBatches(data)
+    Promise.all([
+      fetchDashboardSummary(),
+      fetchBatches({ page: 0, size: 10, sort: 'createdAt', direction: 'desc' }),
+    ])
+      .then(([summaryData, batchPage]) => {
+        if (active) {
+          setSummary(summaryData)
+          setRecentBatches(batchPage.content)
+        }
       })
       .catch((err: unknown) => {
         if (active) setError(err instanceof Error ? err.message : 'Failed to load')
@@ -27,14 +34,6 @@ export function Dashboard() {
     }
   }, [])
 
-  const totalActivities = batches.reduce((s, b) => s + b.activityCount, 0)
-  const totalParties = batches.reduce((s, b) => s + b.partyCount, 0)
-  const draftCount = batches.filter((b) => b.filingStatus === 'DRAFT').length
-  const reviewCount = batches.filter((b) => b.filingStatus === 'REVIEW').length
-  const submittedCount = batches.filter(
-    (b) => b.filingStatus === 'SUBMITTED' || b.filingStatus === 'ACKNOWLEDGED',
-  ).length
-
   return (
     <>
       <div className="page-header">
@@ -46,27 +45,27 @@ export function Dashboard() {
       <div className="metric-grid" style={{ marginBottom: '1.5rem' }}>
         <div className="metric-card accent-card">
           <span className="metric-label">Total Batches</span>
-          <strong>{batches.length}</strong>
+          <strong>{summary?.totalBatches ?? '—'}</strong>
         </div>
         <div className="metric-card">
           <span className="metric-label">Activities</span>
-          <strong>{totalActivities}</strong>
+          <strong>{summary?.totalActivities ?? '—'}</strong>
         </div>
         <div className="metric-card">
           <span className="metric-label">Parties</span>
-          <strong>{totalParties}</strong>
+          <strong>{summary?.totalParties ?? '—'}</strong>
         </div>
         <div className="metric-card">
           <span className="metric-label">Drafts</span>
-          <strong>{draftCount}</strong>
+          <strong>{summary?.draftCount ?? '—'}</strong>
         </div>
         <div className="metric-card">
           <span className="metric-label">In Review</span>
-          <strong>{reviewCount}</strong>
+          <strong>{summary?.reviewCount ?? '—'}</strong>
         </div>
         <div className="metric-card">
           <span className="metric-label">Filed</span>
-          <strong>{submittedCount}</strong>
+          <strong>{(summary?.submittedCount ?? 0) + (summary?.acknowledgedCount ?? 0)}</strong>
         </div>
       </div>
 
@@ -95,7 +94,7 @@ export function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {batches.length === 0 ? (
+                {recentBatches.length === 0 ? (
                   <tr>
                     <td colSpan={6}>
                       <div className="empty-state">
@@ -109,7 +108,7 @@ export function Dashboard() {
                     </td>
                   </tr>
                 ) : (
-                  batches.slice(0, 10).map((b) => (
+                  recentBatches.map((b) => (
                     <tr key={b.id} className="link-row" onClick={() => {}}>
                       <td>
                         <Link to={`/batches/${b.id}`}>#{b.id}</Link>

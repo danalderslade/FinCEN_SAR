@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { createBatch, deleteBatch, fetchBatches } from '../api'
 import { StatusBadge } from '../components/StatusBadge'
-import type { BatchRequest, BatchSummary } from '../types'
+import type { BatchRequest, BatchSummary, FilingStatus } from '../types'
+import { FILING_STATUSES } from '../types'
 import { formatDate } from '../util'
 
 export function BatchList() {
@@ -11,18 +12,33 @@ export function BatchList() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
+  const [page, setPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const [totalElements, setTotalElements] = useState(0)
+  const [statusFilter, setStatusFilter] = useState<FilingStatus | ''>('')
+  const pageSize = 20
 
-  function load() {
+  const load = useCallback(() => {
     setLoading(true)
-    fetchBatches()
-      .then(setBatches)
+    fetchBatches({
+      page,
+      size: pageSize,
+      status: statusFilter || undefined,
+      sort: 'createdAt',
+      direction: 'desc',
+    })
+      .then((resp) => {
+        setBatches(resp.content)
+        setTotalPages(resp.totalPages)
+        setTotalElements(resp.totalElements)
+      })
       .catch((e: unknown) => setError(e instanceof Error ? e.message : 'Failed'))
       .finally(() => setLoading(false))
-  }
+  }, [page, statusFilter])
 
   useEffect(() => {
     load()
-  }, [])
+  }, [load])
 
   async function handleCreate(data: BatchRequest) {
     const batch = await createBatch(data)
@@ -35,6 +51,11 @@ export function BatchList() {
     load()
   }
 
+  function handleStatusChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    setStatusFilter(e.target.value as FilingStatus | '')
+    setPage(0)
+  }
+
   return (
     <>
       <div className="page-header">
@@ -44,10 +65,20 @@ export function BatchList() {
 
       <div className="card">
         <div className="card-header">
-          <h2>All Batches</h2>
-          <button className="btn btn-primary btn-sm" onClick={() => setShowForm(!showForm)}>
-            {showForm ? 'Cancel' : '+ New Batch'}
-          </button>
+          <h2>All Batches {totalElements > 0 && <small>({totalElements})</small>}</h2>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <select value={statusFilter} onChange={handleStatusChange} className="form-select">
+              <option value="">All Statuses</option>
+              {FILING_STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+            <button className="btn btn-primary btn-sm" onClick={() => setShowForm(!showForm)}>
+              {showForm ? 'Cancel' : '+ New Batch'}
+            </button>
+          </div>
         </div>
 
         {showForm && (
@@ -109,6 +140,30 @@ export function BatchList() {
                 )}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {!loading && totalPages > 1 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 0' }}>
+            <span className="text-muted">
+              Page {page + 1} of {totalPages}
+            </span>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                className="btn btn-sm"
+                disabled={page === 0}
+                onClick={() => setPage((p) => p - 1)}
+              >
+                ← Previous
+              </button>
+              <button
+                className="btn btn-sm"
+                disabled={page >= totalPages - 1}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Next →
+              </button>
+            </div>
           </div>
         )}
       </div>

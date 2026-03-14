@@ -11,6 +11,30 @@ export const STATUS_COLORS: Record<FilingStatus, string> = {
   REJECTED: '#dc2626',
 }
 
+// ── Pagination ────────────────────────────────────────────────────────────────
+
+export type PageResponse<T> = {
+  content: T[]
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
+  last: boolean
+}
+
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+
+export type DashboardSummary = {
+  totalBatches: number
+  totalActivities: number
+  totalParties: number
+  draftCount: number
+  reviewCount: number
+  submittedCount: number
+  acknowledgedCount: number
+  rejectedCount: number
+}
+
 export const PARTY_TYPE_LABELS: Record<number, string> = {
   30: 'Filing Institution',
   8: 'Branch Where Activity Occurred',
