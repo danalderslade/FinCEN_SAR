@@ -277,6 +277,176 @@ tbody tr:hover {
   color: #14532d;
 }
 
+/* ── Required Field Indicators ─────────────────────────────────────────────── */
+
+.form-field label .required-star {
+  color: #dc2626;
+  font-weight: 700;
+  margin-left: 0.15em;
+}
+
+.form-field.has-error input,
+.form-field.has-error select,
+.form-field.has-error textarea {
+  border-color: #dc2626;
+  background: rgba(220, 38, 38, 0.04);
+}
+
+.field-error {
+  font-size: 0.72rem;
+  color: #dc2626;
+  margin-top: 0.15rem;
+}
+
+.field-hint {
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-top: 0.1rem;
+}
+
+.field-counter {
+  font-size: 0.68rem;
+  color: var(--muted);
+  text-align: right;
+  margin-top: 0.1rem;
+}
+
+.field-counter.over-limit {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+/* ── Validation Summary ────────────────────────────────────────────────────── */
+
+.validation-summary {
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  font-size: 0.82rem;
+}
+
+.validation-summary.has-errors {
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+.validation-summary.has-warnings {
+  background: rgba(234, 179, 8, 0.08);
+  border: 1px solid rgba(234, 179, 8, 0.2);
+}
+
+.validation-summary.all-valid {
+  background: rgba(22, 163, 74, 0.08);
+  border: 1px solid rgba(22, 163, 74, 0.2);
+}
+
+.validation-summary h4 {
+  margin: 0 0 0.35rem;
+  font-size: 0.82rem;
+}
+
+.validation-summary ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.validation-summary li {
+  margin-bottom: 0.15rem;
+}
+
+.validation-summary .val-error {
+  color: #dc2626;
+}
+
+.validation-summary .val-warning {
+  color: #a16207;
+}
+
+/* ── Completeness Bar ──────────────────────────────────────────────────────── */
+
+.completeness-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.completeness-track {
+  flex: 1;
+  height: 0.5rem;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.completeness-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.completeness-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  min-width: 3rem;
+  text-align: right;
+}
+
+/* ── Section Divider ───────────────────────────────────────────────────────── */
+
+.form-section {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.form-section h4 {
+  font-size: 0.85rem;
+  margin: 0 0 0.75rem;
+  color: var(--text-h);
+}
+
+.form-section-hint {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: -0.5rem;
+  margin-bottom: 0.75rem;
+  font-style: italic;
+}
+
+/* ── Inline tag list ───────────────────────────────────────────────────────── */
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: rgba(43, 57, 39, 0.08);
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
+
+.tag .remove-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.85rem;
+  padding: 0;
+  line-height: 1;
+}
+
+.tag .remove-btn:hover {
+  color: #dc2626;
+}
+
 /* ── Forms ──────────────────────────────────────────────────────────────────── */
 
 .form-grid {

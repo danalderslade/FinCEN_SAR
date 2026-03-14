@@ -36,14 +36,16 @@ export type DashboardSummary = {
 }
 
 export const PARTY_TYPE_LABELS: Record<number, string> = {
+  8: 'Designated Contact Office',
+  18: 'Law Enforcement Agency',
+  19: 'Law Enforcement Name',
   30: 'Filing Institution',
-  8: 'Branch Where Activity Occurred',
-  23: 'Contact for Assistance',
   33: 'Subject',
-  34: 'Seller',
-  35: 'Payor',
-  37: 'Financial Institution Where Account is Held',
-  46: 'Person on Behalf of Subject',
+  34: 'FI Where Activity Occurred',
+  35: 'Transmitter',
+  37: 'Transmitter Contact',
+  41: 'FI Where Account is Held',
+  46: 'Branch Where Activity Occurred',
 }
 
 // ── Batch ──────────────────────────────────────────────────────────────────────
@@ -174,6 +176,17 @@ export type PartyResponse = {
   femaleGenderIndicator: boolean | null
   unknownGenderIndicator: boolean | null
   partyAsEntityOrganization: boolean | null
+  allCriticalSubjectInfoUnavailable: boolean | null
+  birthDateUnknown: boolean | null
+  payLocationIndicator: boolean | null
+  sellingLocationIndicator: boolean | null
+  sellingPayingLocationIndicator: boolean | null
+  noKnownAccountInvolved: boolean | null
+  bothPurchaserSenderPayeeReceiver: boolean | null
+  purchaserSenderIndicator: boolean | null
+  payeeReceiverIndicator: boolean | null
+  contactDate: string | null
+  nonUsFinancialInstitution: boolean | null
   names: PartyNameResponse[]
   addresses: PartyAddressResponse[]
   phones: PartyPhoneResponse[]
@@ -198,6 +211,17 @@ export type PartyRequest = {
   femaleGenderIndicator?: boolean
   unknownGenderIndicator?: boolean
   partyAsEntityOrganization?: boolean
+  allCriticalSubjectInfoUnavailable?: boolean
+  birthDateUnknown?: boolean
+  payLocationIndicator?: boolean
+  sellingLocationIndicator?: boolean
+  sellingPayingLocationIndicator?: boolean
+  noKnownAccountInvolved?: boolean
+  bothPurchaserSenderPayeeReceiver?: boolean
+  purchaserSenderIndicator?: boolean
+  payeeReceiverIndicator?: boolean
+  contactDate?: string
+  nonUsFinancialInstitution?: boolean
   names: PartyNameRequest[]
   addresses: PartyAddressRequest[]
   phones: PartyPhoneRequest[]
@@ -219,6 +243,8 @@ export type PartyNameResponse = {
   rawIndividualFirstName: string | null
   rawIndividualMiddleName: string | null
   rawIndividualNameSuffixText: string | null
+  entityLastNameUnknown: boolean | null
+  firstNameUnknown: boolean | null
 }
 
 export type PartyNameRequest = {
@@ -241,7 +267,10 @@ export type PartyAddressResponse = {
   rawZipCode: string | null
   rawCountryCode: string | null
   cityUnknown: boolean | null
+  countryCodeUnknown: boolean | null
+  stateCodeUnknown: boolean | null
   streetAddressUnknown: boolean | null
+  zipCodeUnknown: boolean | null
 }
 
 export type PartyAddressRequest = {
@@ -251,6 +280,11 @@ export type PartyAddressRequest = {
   rawStateCode?: string
   rawZipCode?: string
   rawCountryCode?: string
+  cityUnknown?: boolean
+  countryCodeUnknown?: boolean
+  stateCodeUnknown?: boolean
+  streetAddressUnknown?: boolean
+  zipCodeUnknown?: boolean
 }
 
 // ── Party Phone ───────────────────────────────────────────────────────────────
@@ -276,8 +310,10 @@ export type PartyIdentificationResponse = {
   partyIdentificationTypeCode: number | null
   partyIdentificationNumber: string | null
   tinUnknown: boolean | null
+  identificationPresentUnknown: boolean | null
   otherIssuerCountry: string | null
   otherIssuerState: string | null
+  otherPartyIdentificationTypeText: string | null
 }
 
 export type PartyIdentificationRequest = {
@@ -285,8 +321,10 @@ export type PartyIdentificationRequest = {
   partyIdentificationTypeCode?: number
   partyIdentificationNumber?: string
   tinUnknown?: boolean
+  identificationPresentUnknown?: boolean
   otherIssuerCountry?: string
   otherIssuerState?: string
+  otherPartyIdentificationTypeText?: string
 }
 
 // ── Org Classification ────────────────────────────────────────────────────────
@@ -303,6 +341,7 @@ export type OrgClassificationRequest = {
   organizationTypeId: number
   organizationSubtypeId?: number
   otherOrganizationTypeText?: string
+  otherOrganizationSubtypeText?: string
 }
 
 // ── Party Occupation ──────────────────────────────────────────────────────────
@@ -338,12 +377,23 @@ export type ElectronicAddressRequest = {
 export type PartyAssociationResponse = {
   id: number
   subjectRelationshipInstitutionTin: string | null
+  accountantIndicator: boolean | null
+  agentIndicator: boolean | null
+  appraiserIndicator: boolean | null
+  attorneyIndicator: boolean | null
+  borrowerIndicator: boolean | null
   customerIndicator: boolean | null
+  directorIndicator: boolean | null
   employeeIndicator: boolean | null
-  officerIndicator: boolean | null
   noRelationshipToInstitution: boolean | null
+  officerIndicator: boolean | null
+  ownerShareholderIndicator: boolean | null
+  otherRelationshipIndicator: boolean | null
+  otherPartyAssociationTypeText: string | null
   relationshipContinues: boolean | null
   terminatedIndicator: boolean | null
+  suspendedBarredIndicator: boolean | null
+  resignedIndicator: boolean | null
   actionTakenDate: string | null
   branchParties: BranchPartyResponse[]
 }
@@ -351,12 +401,23 @@ export type PartyAssociationResponse = {
 export type PartyAssociationRequest = {
   seqNum: number
   subjectRelationshipInstitutionTin?: string
+  accountantIndicator?: boolean
+  agentIndicator?: boolean
+  appraiserIndicator?: boolean
+  attorneyIndicator?: boolean
+  borrowerIndicator?: boolean
   customerIndicator?: boolean
+  directorIndicator?: boolean
   employeeIndicator?: boolean
-  officerIndicator?: boolean
   noRelationshipToInstitution?: boolean
+  officerIndicator?: boolean
+  ownerShareholderIndicator?: boolean
+  otherRelationshipIndicator?: boolean
+  otherPartyAssociationTypeText?: string
   relationshipContinues?: boolean
   terminatedIndicator?: boolean
+  suspendedBarredIndicator?: boolean
+  resignedIndicator?: boolean
   actionTakenDate?: string
   branchParties: BranchPartyRequest[]
 }

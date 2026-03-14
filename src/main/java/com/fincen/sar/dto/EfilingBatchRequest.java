@@ -1,6 +1,7 @@
 package com.fincen.sar.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -21,6 +22,7 @@ public class EfilingBatchRequest {
     @Min(1)
     private Integer activityCount;
 
+    @Digits(integer = 18, fraction = 0, message = "totalAmount must be a whole dollar value with max 18 digits")
     private BigDecimal totalAmount;
 
     @NotNull(message = "partyCount is required")

@@ -2,6 +2,7 @@ package com.fincen.sar.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,6 +27,7 @@ public class PartyRequest {
     @NotNull
     private Short activityPartyTypeCode;
 
+    @Digits(integer = 15, fraction = 0, message = "lossToFinancialAmount must be a whole dollar value")
     private BigDecimal lossToFinancialAmount;
     private Boolean noBranchActivityInvolved;
     private Boolean payLocationIndicator;

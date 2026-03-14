@@ -2,7 +2,9 @@ package com.fincen.sar.dto;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,12 +27,14 @@ public class SuspiciousActivityRequest {
     private Boolean noAmountInvolved;
 
     @DecimalMin("0")
+    @Digits(integer = 15, fraction = 0, message = "amount must be a whole dollar value")
     private BigDecimal totalSuspiciousAmount;
 
     @NotNull
     private LocalDate suspiciousActivityFromDate;
 
     private LocalDate suspiciousActivityToDate;
+    @Digits(integer = 15, fraction = 0, message = "cumulativeTotalViolationAmount must be a whole dollar value")
     private BigDecimal cumulativeTotalViolationAmount;
 
     @Builder.Default
