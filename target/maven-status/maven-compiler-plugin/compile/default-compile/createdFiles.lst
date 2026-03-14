@@ -69,9 +69,11 @@ com/fincen/sar/entity/AccountHoldingParty.class
 com/fincen/sar/dto/SuspiciousActivityClassificationResponse.class
 com/fincen/sar/dto/AssetAttributeRequest.class
 com/fincen/sar/entity/PartyAddress$PartyAddressBuilder.class
+com/fincen/sar/entity/FilingStatus.class
 com/fincen/sar/dto/OrgClassificationRequest.class
 com/fincen/sar/dto/PartyAssociationRequest.class
 com/fincen/sar/dto/IpAddressResponse$IpAddressResponseBuilder.class
+com/fincen/sar/OpenApiConfig.class
 com/fincen/sar/dto/IpAddressRequest.class
 com/fincen/sar/entity/AssetAttribute$AssetAttributeBuilder.class
 com/fincen/sar/dto/BranchPartyRequest$BranchPartyRequestBuilder.class
@@ -82,6 +84,7 @@ com/fincen/sar/controller/EfilingBatchController.class
 com/fincen/sar/dto/PartyIdentificationRequest$PartyIdentificationRequestBuilder.class
 com/fincen/sar/dto/CyberEventResponse.class
 com/fincen/sar/entity/PartyIdentification.class
+com/fincen/sar/service/BsaXmlGenerationService.class
 com/fincen/sar/entity/CyberEventIndicator$CyberEventIndicatorBuilder.class
 com/fincen/sar/entity/ActivityAssociation$ActivityAssociationBuilder.class
 com/fincen/sar/entity/ActivityIpAddress$ActivityIpAddressBuilder.class
@@ -140,6 +143,7 @@ com/fincen/sar/repository/SuspiciousActivityClassificationRepository.class
 com/fincen/sar/dto/PartyAccountAssociationResponse.class
 com/fincen/sar/entity/OrgClassification$OrgClassificationBuilder.class
 com/fincen/sar/dto/PartyAssociationResponse$PartyAssociationResponseBuilder.class
+com/fincen/sar/service/FilingWorkflowService.class
 com/fincen/sar/entity/AccountHoldingParty$AccountHoldingPartyBuilder.class
 com/fincen/sar/controller/PartyAssociationPatchController.class
 com/fincen/sar/dto/PartyAccountAssociationResponse$PartyAccountAssociationResponseBuilder.class
@@ -159,6 +163,7 @@ com/fincen/sar/entity/PartyAccountAssociation$PartyAccountAssociationBuilder.cla
 com/fincen/sar/entity/PartyName$PartyNameBuilder.class
 com/fincen/sar/dto/PartyAddressRequest$PartyAddressRequestBuilder.class
 com/fincen/sar/repository/PartyOccupationRepository.class
+com/fincen/sar/exception/InvalidStateTransitionException.class
 com/fincen/sar/dto/SuspiciousActivityResponse.class
 com/fincen/sar/repository/AssetAttributeRepository.class
 com/fincen/sar/repository/EfilingBatchRepository.class
@@ -178,6 +183,7 @@ com/fincen/sar/dto/AccountRequest$AccountRequestBuilder.class
 com/fincen/sar/entity/Account$AccountBuilder.class
 com/fincen/sar/entity/Party$PartyBuilder.class
 com/fincen/sar/exception/ResourceNotFoundException.class
+com/fincen/sar/controller/FilingWorkflowController.class
 com/fincen/sar/dto/PartyIdentificationResponse.class
 com/fincen/sar/dto/BranchIdentificationResponse.class
 com/fincen/sar/repository/ActivityRepository.class
@@ -225,6 +231,7 @@ com/fincen/sar/dto/BranchPartyResponse$BranchPartyResponseBuilder.class
 com/fincen/sar/dto/ActivityRequest$ActivityRequestBuilder.class
 com/fincen/sar/entity/CyberEventIndicator.class
 com/fincen/sar/dto/BranchIdentificationRequest$BranchIdentificationRequestBuilder.class
+com/fincen/sar/controller/BsaXmlController.class
 com/fincen/sar/dto/ApiError$ApiErrorBuilder.class
 com/fincen/sar/entity/ActivityNarrative.class
 com/fincen/sar/entity/EfilingBatch$EfilingBatchBuilder.class

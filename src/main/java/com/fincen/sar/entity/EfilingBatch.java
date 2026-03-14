@@ -39,6 +39,11 @@ public class EfilingBatch {
     @Column(name = "form_type_code", nullable = false, length = 4)
     private String formTypeCode = "SARX";
 
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "filing_status", nullable = false, length = 20)
+    private FilingStatus filingStatus = FilingStatus.DRAFT;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;

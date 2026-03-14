@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.fincen.sar.Phase1IntegrationTest
+-------------------------------------------------------------------------------
+Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.491 s -- in com.fincen.sar.Phase1IntegrationTest

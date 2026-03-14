@@ -1,7 +1,10 @@
+/workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/OpenApiConfig.java
 /workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/SarApiApplication.java
 /workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/config/WebConfig.java
 /workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/controller/ActivityController.java
+/workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/controller/BsaXmlController.java
 /workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/controller/EfilingBatchController.java
+/workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/controller/FilingWorkflowController.java
 /workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/controller/PatchControllers.java
 /workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/controller/SubResourceControllers.java
 /workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/dto/AccountHoldingPartyIdentificationRequest.java
@@ -89,6 +92,7 @@
 /workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/entity/EfilingActivityError.java
 /workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/entity/EfilingBatch.java
 /workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/entity/ElectronicAddress.java
+/workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/entity/FilingStatus.java
 /workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/entity/OrgClassification.java
 /workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/entity/Party.java
 /workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/entity/PartyAccountAssociation.java
@@ -102,6 +106,7 @@
 /workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/entity/SuspiciousActivityClassification.java
 /workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/exception/ConflictException.java
 /workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/exception/GlobalExceptionHandler.java
+/workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/exception/InvalidStateTransitionException.java
 /workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/exception/ResourceNotFoundException.java
 /workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/mapper/SarMapper.java
 /workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/repository/AccountRepository.java
@@ -128,7 +133,9 @@
 /workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/repository/SuspiciousActivityRepository.java
 /workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/service/ActivityPatchService.java
 /workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/service/ActivityService.java
+/workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/service/BsaXmlGenerationService.java
 /workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/service/EfilingBatchService.java
+/workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/service/FilingWorkflowService.java
 /workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/service/IpAddressService.java
 /workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/service/NarrativeService.java
 /workspaces/FinCEN_SAR/src/main/java/com/fincen/sar/service/PartyService.java

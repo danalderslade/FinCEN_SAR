@@ -2,6 +2,7 @@ package com.fincen.sar.controller;
 
 import com.fincen.sar.dto.*;
 import com.fincen.sar.service.ActivityPatchService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -63,6 +64,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Step 1 — Activity Header")
 class ActivityHeaderController {
 
     private final ActivityPatchService svc;
@@ -85,6 +87,7 @@ class ActivityHeaderController {
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Step 2 — Filing Type")
 class FilingTypeController {
 
     private final ActivityPatchService svc;
@@ -107,6 +110,7 @@ class FilingTypeController {
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Step 3 — Support Document")
 class SupportDocumentController {
 
     private final ActivityPatchService svc;
@@ -126,6 +130,7 @@ class SupportDocumentController {
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Step 4 — Party Management")
 class PartyPatchController {
 
     private final ActivityPatchService svc;
@@ -282,6 +287,7 @@ class PartyPatchController {
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Step 4 — Party Associations")
 class PartyAssociationPatchController {
 
     private final ActivityPatchService svc;
@@ -317,6 +323,7 @@ class PartyAssociationPatchController {
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Step 4 — Branch Parties")
 class BranchPartyPatchController {
 
     private final ActivityPatchService svc;
@@ -335,6 +342,7 @@ class BranchPartyPatchController {
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Step 5 — Suspicious Activity")
 class SuspiciousActivityPatchController {
 
     private final ActivityPatchService svc;
@@ -374,6 +382,7 @@ class SuspiciousActivityPatchController {
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Step 6 — IP Addresses")
 class IpAddressPatchController {
 
     private final ActivityPatchService svc;
@@ -399,6 +408,7 @@ class IpAddressPatchController {
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Step 7 — Cyber Events")
 class CyberEventPatchController {
 
     private final ActivityPatchService svc;
@@ -424,6 +434,7 @@ class CyberEventPatchController {
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Step 8 — Assets")
 class AssetPatchController {
 
     private final ActivityPatchService svc;
@@ -463,6 +474,7 @@ class AssetPatchController {
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Step 9 — Narratives")
 class NarrativePatchController {
 
     private final ActivityPatchService svc;

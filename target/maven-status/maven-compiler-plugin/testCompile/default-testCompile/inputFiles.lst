@@ -1,2 +1,3 @@
+/workspaces/FinCEN_SAR/src/test/java/com/fincen/sar/Phase1IntegrationTest.java
 /workspaces/FinCEN_SAR/src/test/java/com/fincen/sar/SarApiIntegrationTest.java
 /workspaces/FinCEN_SAR/src/test/java/com/fincen/sar/SarPatchIntegrationTest.java

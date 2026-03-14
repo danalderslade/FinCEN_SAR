@@ -20,6 +20,7 @@ public class SarMapper {
                 .activityAttachmentCount(b.getActivityAttachmentCount())
                 .attachmentCount(b.getAttachmentCount())
                 .formTypeCode(b.getFormTypeCode())
+                .filingStatus(b.getFilingStatus() != null ? b.getFilingStatus().name() : null)
                 .createdAt(b.getCreatedAt())
                 .updatedAt(b.getUpdatedAt())
                 .activities(b.getActivities() == null ? List.of()
@@ -35,6 +36,7 @@ public class SarMapper {
                 .seqNum(a.getSeqNum())
                 .filingDate(a.getFilingDate())
                 .bsaIdentifier(a.getBsaIdentifier())
+                .filingStatus(a.getFilingStatus() != null ? a.getFilingStatus().name() : null)
                 .createdAt(a.getCreatedAt())
                 .build();
     }
@@ -48,6 +50,7 @@ public class SarMapper {
                 .filingDate(a.getFilingDate())
                 .filingInstitutionNoteToFincen(a.getFilingInstitutionNoteToFincen())
                 .bsaIdentifier(a.getBsaIdentifier())
+                .filingStatus(a.getFilingStatus() != null ? a.getFilingStatus().name() : null)
                 .createdAt(a.getCreatedAt())
                 .activityAssociation(toAssocResponse(a.getActivityAssociation()))
                 .activitySupportDocument(toSupportDocResponse(a.getActivitySupportDocument()))

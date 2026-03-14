@@ -2,6 +2,8 @@ package com.fincen.sar.controller;
 
 import com.fincen.sar.dto.*;
 import com.fincen.sar.service.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
@@ -22,6 +24,7 @@ import java.util.List;
  */
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Parties", description = "Party CRUD on activities")
 class PartyController {
 
     private final PartyService service;
@@ -65,6 +68,7 @@ class PartyController {
  */
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Suspicious Activity", description = "Suspicious activity management")
 class SuspiciousActivityController {
 
     private final SuspiciousActivityService service;
@@ -99,6 +103,7 @@ class SuspiciousActivityController {
  */
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "IP Addresses", description = "Activity IP address listing and deletion")
 class IpAddressController {
 
     private final IpAddressService service;
@@ -126,6 +131,7 @@ class IpAddressController {
  */
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Narratives", description = "Narrative listing and deletion")
 class NarrativeController {
 
     private final NarrativeService service;

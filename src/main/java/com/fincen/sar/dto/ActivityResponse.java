@@ -23,6 +23,7 @@ public class ActivityResponse {
     private LocalDate filingDate;
     private String filingInstitutionNoteToFincen;
     private String bsaIdentifier;
+    private String filingStatus;
     private OffsetDateTime createdAt;
     private ActivityAssociationResponse activityAssociation;
     private ActivitySupportDocumentResponse activitySupportDocument;

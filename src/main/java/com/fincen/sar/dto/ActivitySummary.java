@@ -19,5 +19,6 @@ public class ActivitySummary {
     private Long seqNum;
     private LocalDate filingDate;
     private String bsaIdentifier;
+    private String filingStatus;
     private OffsetDateTime createdAt;
 }

@@ -23,6 +23,7 @@ public class EfilingBatchResponse {
     private Integer activityAttachmentCount;
     private Integer attachmentCount;
     private String formTypeCode;
+    private String filingStatus;
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
     private List<ActivitySummary> activities;

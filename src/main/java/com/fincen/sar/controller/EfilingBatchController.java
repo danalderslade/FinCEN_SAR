@@ -2,6 +2,8 @@ package com.fincen.sar.controller;
 
 import com.fincen.sar.dto.*;
 import com.fincen.sar.service.EfilingBatchService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
@@ -19,10 +21,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/batches")
 @RequiredArgsConstructor
+@Tag(name = "E-Filing Batches", description = "CRUD operations for SAR e-filing batches")
 public class EfilingBatchController {
 
     private final EfilingBatchService service;
 
+    @Operation(summary = "Create a new e-filing batch")
     @PostMapping
     public ResponseEntity<EfilingBatchResponse> create(@Valid @RequestBody EfilingBatchRequest req) {
         EfilingBatchResponse created = service.create(req);
@@ -32,16 +36,19 @@ public class EfilingBatchController {
                 .body(created);
     }
 
+    @Operation(summary = "List all e-filing batches")
     @GetMapping
     public List<EfilingBatchResponse> getAll() {
         return service.getAll();
     }
 
+    @Operation(summary = "Get a batch by ID")
     @GetMapping("/{id}")
     public EfilingBatchResponse getById(@PathVariable Long id) {
         return service.getById(id);
     }
 
+    @Operation(summary = "Delete a batch and all child activities")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {

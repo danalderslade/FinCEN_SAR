@@ -26,6 +26,12 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.CONFLICT, ex.getMessage(), req);
     }
 
+    @ExceptionHandler(InvalidStateTransitionException.class)
+    public ResponseEntity<ApiError> handleInvalidTransition(InvalidStateTransitionException ex,
+                                                             HttpServletRequest req) {
+        return build(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage(), req);
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiError> handleDataIntegrity(DataIntegrityViolationException ex,
                                                          HttpServletRequest req) {

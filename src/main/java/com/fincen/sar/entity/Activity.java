@@ -38,6 +38,11 @@ public class Activity {
     @Column(name = "bsa_identifier", length = 14)
     private String bsaIdentifier;
 
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "filing_status", nullable = false, length = 20)
+    private FilingStatus filingStatus = FilingStatus.DRAFT;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
