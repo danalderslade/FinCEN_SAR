@@ -22,6 +22,7 @@ public class FilingWorkflowService {
 
     private final EfilingBatchRepository batchRepo;
     private final SarMapper mapper;
+    private final AuditService auditService;
 
     private static final Map<FilingStatus, Set<FilingStatus>> TRANSITIONS = Map.of(
             FilingStatus.DRAFT,        EnumSet.of(FilingStatus.REVIEW),
@@ -48,7 +49,12 @@ public class FilingWorkflowService {
             activity.setFilingStatus(target);
         }
 
-        return mapper.toBatchResponse(batchRepo.save(batch));
+        EfilingBatchResponse response = mapper.toBatchResponse(batchRepo.save(batch));
+
+        auditService.log("EfilingBatch", batchId, "STATUS_CHANGE",
+                current.name(), target.name());
+
+        return response;
     }
 
     @Transactional(readOnly = true)

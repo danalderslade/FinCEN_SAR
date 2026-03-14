@@ -35,14 +35,42 @@ class ApiError extends Error {
   }
 }
 
+function getAuthToken(): string | null {
+  try {
+    const stored = localStorage.getItem('sar_auth')
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      return parsed.token || null
+    }
+  } catch { /* ignore */ }
+  return null
+}
+
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, {
-    ...init,
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...init?.headers },
-  })
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+    ...((init?.headers as Record<string, string>) || {}),
+  }
+
+  const token = getAuthToken()
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+
+  const res = await fetch(url, { ...init, headers })
+  if (res.status === 401) {
+    window.dispatchEvent(new CustomEvent('auth-error', { detail: 401 }))
+    throw new ApiError(401, 'Session expired — please log in again.')
+  }
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText)
-    throw new ApiError(res.status, text)
+    let message = text
+    try {
+      const json = JSON.parse(text)
+      message = json.message || text
+    } catch { /* use raw text */ }
+    throw new ApiError(res.status, message)
   }
   const contentType = res.headers.get('content-type')
   if (contentType?.includes('application/json')) {
@@ -275,9 +303,12 @@ export function rejectBatch(batchId: number): Promise<BatchResponse> {
 // ── BSA XML ───────────────────────────────────────────────────────────────────
 
 export async function downloadBsaXml(batchId: number): Promise<Blob> {
-  const res = await fetch(`${BASE}/batches/${batchId}/xml`, {
-    headers: { Accept: 'application/xml' },
-  })
+  const headers: Record<string, string> = { Accept: 'application/xml' }
+  const token = getAuthToken()
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+  const res = await fetch(`${BASE}/batches/${batchId}/xml`, { headers })
   if (!res.ok) {
     throw new ApiError(res.status, `XML generation failed: ${res.statusText}`)
   }

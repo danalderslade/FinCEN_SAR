@@ -8,9 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.*;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -23,6 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ActiveProfiles("test")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@WithMockUser(roles = "ADMIN")
 public class Phase1IntegrationTest {
 
     MockMvc mvc;
@@ -32,7 +36,9 @@ public class Phase1IntegrationTest {
 
     @BeforeEach
     void setUp() {
-        mvc = MockMvcBuilders.webAppContextSetup(wac).build();
+        mvc = MockMvcBuilders.webAppContextSetup(wac)
+                .apply(springSecurity())
+                .build();
     }
 
     static Long batchId;
@@ -244,13 +250,8 @@ public class Phase1IntegrationTest {
     }
 
     // ── OpenAPI Endpoint Test ─────────────────────────────────────────────────
-
-    @Test @Order(30)
-    void openApiEndpointAccessible() throws Exception {
-        mvc.perform(get("/v3/api-docs"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.info.title").value("FinCEN SAR Filing API"));
-    }
+    // Skipped: springdoc-openapi runtime removed due to Spring Boot 4.x incompatibility.
+    // Swagger annotations are compile-only; /v3/api-docs is not served at runtime.
 
     // ── Cleanup ───────────────────────────────────────────────────────────────
 

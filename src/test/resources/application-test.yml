@@ -12,3 +12,8 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
   flyway:
     enabled: false   # Use Hibernate DDL in tests
+
+app:
+  jwt:
+    secret: TestSecretKeyForUnitTestsThatMustBeAtLeast256BitsLong!DoNotUseInProd!
+    expiration-ms: 86400000

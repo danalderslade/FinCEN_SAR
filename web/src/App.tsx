@@ -1,12 +1,20 @@
 import { NavLink, Route, Routes } from 'react-router-dom'
 import './App.css'
+import { useAuth } from './AuthContext'
 import { Dashboard } from './pages/Dashboard'
 import { BatchList } from './pages/BatchList'
 import { BatchDetail } from './pages/BatchDetail'
 import { ActivityDetail } from './pages/ActivityDetail'
 import { ActivityWizard } from './pages/ActivityWizard'
+import { Login } from './pages/Login'
 
 function App() {
+  const { isAuthenticated, user, logout } = useAuth()
+
+  if (!isAuthenticated) {
+    return <Login />
+  }
+
   return (
     <div className="layout">
       <aside className="sidebar">
@@ -21,6 +29,11 @@ function App() {
           <NavLink to="/batches">Batches</NavLink>
         </nav>
         <div className="sidebar-footer">
+          <div className="user-info">
+            <span className="user-name">{user?.fullName}</span>
+            <span className="user-role">{user?.role}</span>
+          </div>
+          <button className="btn-logout" onClick={logout}>Sign Out</button>
           <span className="version-tag">v2.0 · Phase 2</span>
         </div>
       </aside>

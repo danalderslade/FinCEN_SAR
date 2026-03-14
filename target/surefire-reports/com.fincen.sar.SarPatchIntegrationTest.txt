@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.fincen.sar.SarPatchIntegrationTest
--------------------------------------------------------------------------------
-Tests run: 19, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 16.67 s -- in com.fincen.sar.SarPatchIntegrationTest

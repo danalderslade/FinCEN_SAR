@@ -6,6 +6,7 @@ import com.fincen.sar.service.FilingWorkflowService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,30 +19,35 @@ public class FilingWorkflowController {
 
     @Operation(summary = "Submit batch for review")
     @PostMapping("/review")
+    @PreAuthorize("hasAnyRole('REVIEWER', 'APPROVER', 'ADMIN')")
     public EfilingBatchResponse submitForReview(@PathVariable Long batchId) {
         return service.transition(batchId, FilingStatus.REVIEW);
     }
 
     @Operation(summary = "Return batch to draft")
     @PostMapping("/draft")
+    @PreAuthorize("hasAnyRole('REVIEWER', 'APPROVER', 'ADMIN')")
     public EfilingBatchResponse returnToDraft(@PathVariable Long batchId) {
         return service.transition(batchId, FilingStatus.DRAFT);
     }
 
     @Operation(summary = "Submit batch to FinCEN")
     @PostMapping("/submit")
+    @PreAuthorize("hasAnyRole('APPROVER', 'ADMIN')")
     public EfilingBatchResponse submit(@PathVariable Long batchId) {
         return service.transition(batchId, FilingStatus.SUBMITTED);
     }
 
     @Operation(summary = "Mark batch as acknowledged by FinCEN")
     @PostMapping("/acknowledge")
+    @PreAuthorize("hasAnyRole('APPROVER', 'ADMIN')")
     public EfilingBatchResponse acknowledge(@PathVariable Long batchId) {
         return service.transition(batchId, FilingStatus.ACKNOWLEDGED);
     }
 
     @Operation(summary = "Mark batch as rejected by FinCEN")
     @PostMapping("/reject")
+    @PreAuthorize("hasAnyRole('APPROVER', 'ADMIN')")
     public EfilingBatchResponse reject(@PathVariable Long batchId) {
         return service.transition(batchId, FilingStatus.REJECTED);
     }
