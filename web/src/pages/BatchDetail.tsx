@@ -48,6 +48,7 @@ export function BatchDetail() {
 
   async function handleDelete() {
     if (!batch) return
+    if (!window.confirm('Delete this batch and all its activities? This cannot be undone.')) return
     await deleteBatch(batch.id)
     navigate('/batches')
   }

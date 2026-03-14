@@ -6,13 +6,18 @@ import com.fincen.sar.service.EfilingBatchService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.*;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.util.Set;
 
 /**
  * POST   /batches              — create a new efiling batch
@@ -23,8 +28,11 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 @RestController
 @RequestMapping("/batches")
 @RequiredArgsConstructor
+@Validated
 @Tag(name = "E-Filing Batches", description = "CRUD operations for SAR e-filing batches")
 public class EfilingBatchController {
+
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("createdAt", "id", "filingStatus");
 
     private final EfilingBatchService service;
 
@@ -42,15 +50,28 @@ public class EfilingBatchController {
     @GetMapping
     public PageResponse<EfilingBatchResponse> list(
             @RequestParam(required = false) String status,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "createdAt") String sort,
             @RequestParam(defaultValue = "desc") String direction) {
 
+        if (!ALLOWED_SORT_FIELDS.contains(sort)) {
+            throw new IllegalArgumentException("Invalid sort field. Allowed: " + ALLOWED_SORT_FIELDS);
+        }
         Sort.Direction dir = "asc".equalsIgnoreCase(direction) ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Pageable pageable = PageRequest.of(page, Math.min(size, 100), Sort.by(dir, sort));
-        FilingStatus filingStatus = (status != null) ? FilingStatus.valueOf(status.toUpperCase()) : null;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(dir, sort));
+        FilingStatus filingStatus = parseStatus(status);
         return service.list(filingStatus, pageable);
+    }
+
+    private FilingStatus parseStatus(String status) {
+        if (status == null || status.isBlank()) return null;
+        try {
+            return FilingStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(
+                    "Invalid status '" + status + "'. Allowed: DRAFT, REVIEW, SUBMITTED, ACKNOWLEDGED, REJECTED");
+        }
     }
 
     @Operation(summary = "Get a batch by ID")

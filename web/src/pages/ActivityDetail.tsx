@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { deleteActivity, fetchActivity } from '../api'
 import { StatusBadge } from '../components/StatusBadge'
 import type { ActivityResponse, PartyResponse } from '../types'
@@ -111,12 +111,11 @@ export function ActivityDetail() {
 
 function DeleteButton({ activityId, batchId }: { activityId: number; batchId: number }) {
   const [confirming, setConfirming] = useState(false)
-  const navigate = Link // we need useNavigate
-  void navigate // suppress lint
+  const navigate = useNavigate()
 
   async function handleDelete() {
     await deleteActivity(activityId)
-    window.location.href = `/batches/${batchId}`
+    navigate(`/batches/${batchId}`)
   }
 
   if (confirming) {
