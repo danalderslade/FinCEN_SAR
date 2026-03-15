@@ -1,0 +1,27 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: sar-api-pdb
+  namespace: fincen-sar
+  labels:
+    app.kubernetes.io/name: sar-api
+    app.kubernetes.io/part-of: fincen-sar
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sar-api
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: sar-web-pdb
+  namespace: fincen-sar
+  labels:
+    app.kubernetes.io/name: sar-web
+    app.kubernetes.io/part-of: fincen-sar
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sar-web
