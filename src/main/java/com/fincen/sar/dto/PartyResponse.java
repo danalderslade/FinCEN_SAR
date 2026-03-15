@@ -29,6 +29,17 @@ public class PartyResponse {
     private Boolean femaleGenderIndicator;
     private Boolean unknownGenderIndicator;
     private Boolean partyAsEntityOrganization;
+    private Boolean allCriticalSubjectInfoUnavailable;
+    private Boolean birthDateUnknown;
+    private Boolean noKnownAccountInvolved;
+    private Boolean bothPurchaserSenderPayeeReceiver;
+    private Boolean purchaserSenderIndicator;
+    private Boolean payeeReceiverIndicator;
+    private LocalDate contactDate;
+    private Boolean nonUsFinancialInstitution;
+    private Boolean payLocationIndicator;
+    private Boolean sellingLocationIndicator;
+    private Boolean sellingPayingLocationIndicator;
     private List<PartyNameResponse> names;
     private List<PartyAddressResponse> addresses;
     private List<PartyPhoneResponse> phones;

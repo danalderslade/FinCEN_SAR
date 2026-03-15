@@ -14,4 +14,5 @@ public class OrgClassificationResponse {
     private Short organizationTypeId;
     private Short organizationSubtypeId;
     private String otherOrganizationTypeText;
+    private String otherOrganizationSubtypeText;
 }

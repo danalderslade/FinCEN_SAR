@@ -106,6 +106,17 @@ public class SarMapper {
                 .femaleGenderIndicator(p.getFemaleGenderIndicator())
                 .unknownGenderIndicator(p.getUnknownGenderIndicator())
                 .partyAsEntityOrganization(p.getPartyAsEntityOrganization())
+                .allCriticalSubjectInfoUnavailable(p.getAllCriticalSubjectInfoUnavailable())
+                .birthDateUnknown(p.getBirthDateUnknown())
+                .noKnownAccountInvolved(p.getNoKnownAccountInvolved())
+                .bothPurchaserSenderPayeeReceiver(p.getBothPurchaserSenderPayeeReceiver())
+                .purchaserSenderIndicator(p.getPurchaserSenderIndicator())
+                .payeeReceiverIndicator(p.getPayeeReceiverIndicator())
+                .contactDate(p.getContactDate())
+                .nonUsFinancialInstitution(p.getNonUsFinancialInstitution())
+                .payLocationIndicator(p.getPayLocationIndicator())
+                .sellingLocationIndicator(p.getSellingLocationIndicator())
+                .sellingPayingLocationIndicator(p.getSellingPayingLocationIndicator())
                 .names(p.getNames() == null ? List.of()
                         : p.getNames().stream().map(this::toNameResponse).toList())
                 .addresses(p.getAddresses() == null ? List.of()
@@ -141,7 +152,9 @@ public class SarMapper {
                 .id(a.getId()).rawStreetAddress1(a.getRawStreetAddress1())
                 .rawCity(a.getRawCity()).rawStateCode(a.getRawStateCode())
                 .rawZipCode(a.getRawZipCode()).rawCountryCode(a.getRawCountryCode())
-                .cityUnknown(a.getCityUnknown()).streetAddressUnknown(a.getStreetAddressUnknown())
+                .cityUnknown(a.getCityUnknown()).countryCodeUnknown(a.getCountryCodeUnknown())
+                .stateCodeUnknown(a.getStateCodeUnknown()).streetAddressUnknown(a.getStreetAddressUnknown())
+                .zipCodeUnknown(a.getZipCodeUnknown())
                 .build();
     }
 
@@ -158,8 +171,10 @@ public class SarMapper {
                 .id(i.getId()).partyIdentificationTypeCode(i.getPartyIdentificationTypeCode())
                 .partyIdentificationNumber(i.getPartyIdentificationNumber())
                 .tinUnknown(i.getTinUnknown())
+                .identificationPresentUnknown(i.getIdentificationPresentUnknown())
                 .otherIssuerCountry(i.getOtherIssuerCountry())
                 .otherIssuerState(i.getOtherIssuerState())
+                .otherPartyIdentificationTypeText(i.getOtherPartyIdentificationTypeText())
                 .build();
     }
 
@@ -168,6 +183,7 @@ public class SarMapper {
                 .id(oc.getId()).organizationTypeId(oc.getOrganizationTypeId())
                 .organizationSubtypeId(oc.getOrganizationSubtypeId())
                 .otherOrganizationTypeText(oc.getOtherOrganizationTypeText())
+                .otherOrganizationSubtypeText(oc.getOtherOrganizationSubtypeText())
                 .build();
     }
 
@@ -190,12 +206,23 @@ public class SarMapper {
         return PartyAssociationResponse.builder()
                 .id(pa.getId())
                 .subjectRelationshipInstitutionTin(pa.getSubjectRelationshipInstitutionTin())
+                .accountantIndicator(pa.getAccountantIndicator())
+                .agentIndicator(pa.getAgentIndicator())
+                .appraiserIndicator(pa.getAppraiserIndicator())
+                .attorneyIndicator(pa.getAttorneyIndicator())
+                .borrowerIndicator(pa.getBorrowerIndicator())
                 .customerIndicator(pa.getCustomerIndicator())
+                .directorIndicator(pa.getDirectorIndicator())
                 .employeeIndicator(pa.getEmployeeIndicator())
-                .officerIndicator(pa.getOfficerIndicator())
                 .noRelationshipToInstitution(pa.getNoRelationshipToInstitution())
+                .officerIndicator(pa.getOfficerIndicator())
+                .ownerShareholderIndicator(pa.getOwnerShareholderIndicator())
+                .otherRelationshipIndicator(pa.getOtherRelationshipIndicator())
+                .otherPartyAssociationTypeText(pa.getOtherPartyAssociationTypeText())
                 .relationshipContinues(pa.getRelationshipContinues())
                 .terminatedIndicator(pa.getTerminatedIndicator())
+                .suspendedBarredIndicator(pa.getSuspendedBarredIndicator())
+                .resignedIndicator(pa.getResignedIndicator())
                 .actionTakenDate(pa.getActionTakenDate())
                 .branchParties(pa.getBranchParties() == null ? List.of()
                         : pa.getBranchParties().stream().map(this::toBranchResponse).toList())

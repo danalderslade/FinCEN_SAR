@@ -23,6 +23,7 @@ public class FilingWorkflowService {
     private final EfilingBatchRepository batchRepo;
     private final SarMapper mapper;
     private final AuditService auditService;
+    private final SarValidator validator;
 
     private static final Map<FilingStatus, Set<FilingStatus>> TRANSITIONS = Map.of(
             FilingStatus.DRAFT,        EnumSet.of(FilingStatus.REVIEW),
@@ -45,6 +46,12 @@ public class FilingWorkflowService {
         }
 
         batch.setFilingStatus(target);
+
+        // Validate completeness when submitting for filing
+        if (target == FilingStatus.SUBMITTED) {
+            validator.validateBatchForSubmission(batch);
+        }
+
         for (Activity activity : batch.getActivities()) {
             activity.setFilingStatus(target);
         }

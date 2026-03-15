@@ -42,6 +42,12 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage(), req);
     }
 
+    @ExceptionHandler(SarValidationException.class)
+    public ResponseEntity<ApiError> handleSarValidation(SarValidationException ex,
+                                                         HttpServletRequest req) {
+        return build(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage(), req);
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiError> handleDataIntegrity(DataIntegrityViolationException ex,
                                                          HttpServletRequest req) {

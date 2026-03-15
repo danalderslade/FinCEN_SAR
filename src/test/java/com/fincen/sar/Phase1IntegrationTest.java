@@ -63,19 +63,35 @@ public class Phase1IntegrationTest {
         ActivityRequest actReq = ActivityRequest.builder()
                 .seqNum(1L)
                 .filingDate(LocalDate.of(2024, 6, 1))
-                .parties(List.of(PartyRequest.builder()
-                        .seqNum(1L).activityPartyTypeCode((short) 30)
-                        .names(List.of(PartyNameRequest.builder()
-                                .seqNum(1L).partyNameTypeCode("L")
-                                .rawPartyFullName("Test Bank").build()))
-                        .addresses(List.of(PartyAddressRequest.builder()
-                                .seqNum(1L).rawStreetAddress1("100 Main St")
-                                .rawCity("Washington").rawStateCode("DC")
-                                .rawZipCode("20001").rawCountryCode("US").build()))
-                        .identifications(List.of(PartyIdentificationRequest.builder()
-                                .seqNum(1L).partyIdentificationTypeCode((short) 4)
-                                .partyIdentificationNumber("111222333").build()))
-                        .build()))
+                .activityAssociation(ActivityAssociationRequest.builder()
+                        .seqNum(1L).initialReportIndicator(true).build())
+                .parties(List.of(
+                        // Filing Institution (type 30)
+                        PartyRequest.builder()
+                                .seqNum(1L).activityPartyTypeCode((short) 30)
+                                .primaryRegulatorTypeCode((short) 2)
+                                .names(List.of(PartyNameRequest.builder()
+                                        .seqNum(1L).partyNameTypeCode("L")
+                                        .rawPartyFullName("Test Bank").build()))
+                                .addresses(List.of(PartyAddressRequest.builder()
+                                        .seqNum(1L).rawStreetAddress1("100 Main St")
+                                        .rawCity("Washington").rawStateCode("DC")
+                                        .rawZipCode("20001").rawCountryCode("US").build()))
+                                .identifications(List.of(PartyIdentificationRequest.builder()
+                                        .seqNum(1L).partyIdentificationTypeCode((short) 2)
+                                        .partyIdentificationNumber("111222333").build()))
+                                .orgClassifications(List.of(OrgClassificationRequest.builder()
+                                        .seqNum(1L).organizationTypeId((short) 2).build()))
+                                .build(),
+                        // Subject (type 33)
+                        PartyRequest.builder()
+                                .seqNum(2L).activityPartyTypeCode((short) 33)
+                                .names(List.of(PartyNameRequest.builder()
+                                        .seqNum(1L).partyNameTypeCode("L")
+                                        .rawEntityIndividualLastName("Doe")
+                                        .rawIndividualFirstName("John").build()))
+                                .build()
+                ))
                 .suspiciousActivity(SuspiciousActivityRequest.builder()
                         .seqNum(1L)
                         .totalSuspiciousAmount(BigDecimal.valueOf(25000))
@@ -148,13 +164,19 @@ public class Phase1IntegrationTest {
     void rejectWorkflow() throws Exception {
         // Create new batch for reject path
         EfilingBatchRequest req = EfilingBatchRequest.builder()
-                .activityCount(1).partyCount(0).build();
+                .activityCount(1).partyCount(1).build();
         String body = mvc.perform(post("/batches")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(req)))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         Long b2 = json.readTree(body).get("id").asLong();
+
+        // Add compliant activity for submission
+        mvc.perform(post("/batches/" + b2 + "/activities")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(buildCompliantActivity(1L))))
+                .andExpect(status().isCreated());
 
         // DRAFT -> REVIEW -> SUBMITTED -> REJECTED -> DRAFT
         mvc.perform(post("/batches/" + b2 + "/workflow/review")).andExpect(status().isOk());
@@ -259,5 +281,51 @@ public class Phase1IntegrationTest {
     void cleanupOriginalBatch() throws Exception {
         mvc.perform(delete("/batches/" + batchId))
                 .andExpect(status().isNoContent());
+    }
+
+    // ── Helper: build a FinCEN-compliant activity ─────────────────────────────
+
+    private ActivityRequest buildCompliantActivity(Long seqNum) {
+        return ActivityRequest.builder()
+                .seqNum(seqNum)
+                .filingDate(LocalDate.of(2024, 6, 1))
+                .activityAssociation(ActivityAssociationRequest.builder()
+                        .seqNum(1L).initialReportIndicator(true).build())
+                .parties(List.of(
+                        PartyRequest.builder()
+                                .seqNum(1L).activityPartyTypeCode((short) 30)
+                                .primaryRegulatorTypeCode((short) 2)
+                                .names(List.of(PartyNameRequest.builder()
+                                        .seqNum(1L).partyNameTypeCode("L")
+                                        .rawPartyFullName("Test Bank").build()))
+                                .addresses(List.of(PartyAddressRequest.builder()
+                                        .seqNum(1L).rawStreetAddress1("100 Main St")
+                                        .rawCity("Washington").rawStateCode("DC")
+                                        .rawZipCode("20001").rawCountryCode("US").build()))
+                                .identifications(List.of(PartyIdentificationRequest.builder()
+                                        .seqNum(1L).partyIdentificationTypeCode((short) 2)
+                                        .partyIdentificationNumber("111222333").build()))
+                                .orgClassifications(List.of(OrgClassificationRequest.builder()
+                                        .seqNum(1L).organizationTypeId((short) 2).build()))
+                                .build(),
+                        PartyRequest.builder()
+                                .seqNum(2L).activityPartyTypeCode((short) 33)
+                                .names(List.of(PartyNameRequest.builder()
+                                        .seqNum(1L).partyNameTypeCode("L")
+                                        .rawEntityIndividualLastName("Doe")
+                                        .rawIndividualFirstName("John").build()))
+                                .build()))
+                .suspiciousActivity(SuspiciousActivityRequest.builder()
+                        .seqNum(1L)
+                        .totalSuspiciousAmount(BigDecimal.valueOf(25000))
+                        .suspiciousActivityFromDate(LocalDate.of(2024, 1, 1))
+                        .classifications(List.of(SuspiciousActivityClassificationRequest.builder()
+                                .seqNum(1L).suspiciousActivityTypeId((short) 8)
+                                .suspiciousActivitySubtypeId((short) 807).build()))
+                        .build())
+                .narratives(List.of(NarrativeRequest.builder()
+                        .seqNum(1L).narrativeSequenceNumber((short) 1)
+                        .narrativeText("Test narrative for compliance.").build()))
+                .build();
     }
 }

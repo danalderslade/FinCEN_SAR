@@ -17,12 +17,23 @@ import java.util.List;
 public class PartyAssociationResponse {
     private Long id;
     private String subjectRelationshipInstitutionTin;
+    private Boolean accountantIndicator;
+    private Boolean agentIndicator;
+    private Boolean appraiserIndicator;
+    private Boolean attorneyIndicator;
+    private Boolean borrowerIndicator;
     private Boolean customerIndicator;
+    private Boolean directorIndicator;
     private Boolean employeeIndicator;
-    private Boolean officerIndicator;
     private Boolean noRelationshipToInstitution;
+    private Boolean officerIndicator;
+    private Boolean ownerShareholderIndicator;
+    private Boolean otherRelationshipIndicator;
+    private String otherPartyAssociationTypeText;
     private Boolean relationshipContinues;
     private Boolean terminatedIndicator;
+    private Boolean suspendedBarredIndicator;
+    private Boolean resignedIndicator;
     private LocalDate actionTakenDate;
     private List<BranchPartyResponse> branchParties;
 }

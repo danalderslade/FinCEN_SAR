@@ -14,6 +14,8 @@ public class PartyIdentificationResponse {
     private Short partyIdentificationTypeCode;
     private String partyIdentificationNumber;
     private Boolean tinUnknown;
+    private Boolean identificationPresentUnknown;
     private String otherIssuerCountry;
     private String otherIssuerState;
+    private String otherPartyIdentificationTypeText;
 }

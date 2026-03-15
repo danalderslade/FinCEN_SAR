@@ -55,6 +55,7 @@ public class ActivityPatchService {
 
     private final ActivityService                     activityService;
     private final SarMapper                           mapper;
+    private final SarValidator                        validator;
 
     // ══════════════════════════════════════════════════════════════════════════
     // STEP 1 — Activity Header
@@ -332,6 +333,8 @@ public class ActivityPatchService {
     public ActivityResponse patchPartyAssociation(Long assocId, PatchPartyAssociationRequest req) {
         PartyAssociation pa = partyAssocRepo.findById(assocId)
                 .orElseThrow(() -> new ResourceNotFoundException("PartyAssociation", assocId));
+        validator.requireModifiable(pa.getParty().getActivity().getFilingStatus(),
+                "Activity " + pa.getParty().getActivity().getId());
 
         if (req.getSubjectRelationshipInstitutionTin() != null) pa.setSubjectRelationshipInstitutionTin(req.getSubjectRelationshipInstitutionTin());
         if (req.getAccountantIndicator()          != null) pa.setAccountantIndicator(req.getAccountantIndicator());
@@ -400,6 +403,9 @@ public class ActivityPatchService {
     public ActivityResponse patchBranchParty(Long branchId, PatchBranchPartyRequest req) {
         BranchParty bp = branchPartyRepo.findById(branchId)
                 .orElseThrow(() -> new ResourceNotFoundException("BranchParty", branchId));
+        validator.requireModifiable(
+                bp.getPartyAssociation().getParty().getActivity().getFilingStatus(),
+                "Activity " + bp.getPartyAssociation().getParty().getActivity().getId());
         if (req.getSellingLocationIndicator()       != null) bp.setSellingLocationIndicator(req.getSellingLocationIndicator());
         if (req.getPayLocationIndicator()           != null) bp.setPayLocationIndicator(req.getPayLocationIndicator());
         if (req.getSellingPayingLocationIndicator() != null) bp.setSellingPayingLocationIndicator(req.getSellingPayingLocationIndicator());
@@ -596,6 +602,8 @@ public class ActivityPatchService {
 
     public ActivityResponse addNarrative(Long activityId, NarrativeRequest req) {
         Activity a = findActivity(activityId);
+        validator.validateNarrative(activityId, req.getNarrativeSequenceNumber(),
+                req.getNarrativeText(), false);
         narrativeRepo.save(ActivityNarrative.builder()
                 .activity(a).seqNum(req.getSeqNum())
                 .narrativeSequenceNumber(req.getNarrativeSequenceNumber())
@@ -606,6 +614,7 @@ public class ActivityPatchService {
 
     public ActivityResponse patchNarrative(Long activityId, Short seqNum, PatchNarrativeRequest req) {
         Activity a = findActivity(activityId);
+        validator.validateNarrative(activityId, seqNum, req.getNarrativeText(), true);
         ActivityNarrative n = narrativeRepo
                 .findByActivityIdAndNarrativeSequenceNumber(activityId, seqNum)
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -629,13 +638,18 @@ public class ActivityPatchService {
     // ══════════════════════════════════════════════════════════════════════════
 
     private Activity findActivity(Long id) {
-        return activityRepo.findById(id)
+        Activity a = activityRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Activity", id));
+        validator.requireModifiable(a.getFilingStatus(), "Activity " + id);
+        return a;
     }
 
     private Party findParty(Long id) {
-        return partyRepo.findById(id)
+        Party p = partyRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Party", id));
+        validator.requireModifiable(p.getActivity().getFilingStatus(),
+                "Activity " + p.getActivity().getId());
+        return p;
     }
 
     private SuspiciousActivity requireSuspiciousActivity(Activity a) {

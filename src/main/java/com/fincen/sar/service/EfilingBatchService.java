@@ -19,6 +19,7 @@ public class EfilingBatchService {
 
     private final EfilingBatchRepository repo;
     private final SarMapper mapper;
+    private final SarValidator validator;
 
     @Transactional
     public EfilingBatchResponse create(EfilingBatchRequest req) {

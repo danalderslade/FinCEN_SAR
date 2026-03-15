@@ -17,5 +17,8 @@ public class PartyAddressResponse {
     private String rawZipCode;
     private String rawCountryCode;
     private Boolean cityUnknown;
+    private Boolean countryCodeUnknown;
+    private Boolean stateCodeUnknown;
     private Boolean streetAddressUnknown;
+    private Boolean zipCodeUnknown;
 }

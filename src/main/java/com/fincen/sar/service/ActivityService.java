@@ -20,6 +20,7 @@ public class ActivityService {
     private final ActivityRepository activityRepo;
     private final EfilingBatchRepository batchRepo;
     private final SarMapper mapper;
+    private final SarValidator validator;
 
     // ── Create ────────────────────────────────────────────────────────────────
 
@@ -27,6 +28,7 @@ public class ActivityService {
     public ActivityResponse create(Long batchId, ActivityRequest req) {
         EfilingBatch batch = batchRepo.findById(batchId)
                 .orElseThrow(() -> new ResourceNotFoundException("EfilingBatch", batchId));
+        validator.requireModifiable(batch.getFilingStatus(), "Batch " + batchId);
 
         Activity activity = buildActivity(batch, req);
         Activity saved = activityRepo.save(activity);
