@@ -24,6 +24,7 @@ public class FilingWorkflowService {
     private final SarMapper mapper;
     private final AuditService auditService;
     private final SarValidator validator;
+    private final BsaXmlGenerationService xmlGenerationService;
 
     private static final Map<FilingStatus, Set<FilingStatus>> TRANSITIONS = Map.of(
             FilingStatus.DRAFT,        EnumSet.of(FilingStatus.REVIEW),
@@ -50,6 +51,7 @@ public class FilingWorkflowService {
         // Validate completeness when submitting for filing
         if (target == FilingStatus.SUBMITTED) {
             validator.validateBatchForSubmission(batch);
+            xmlGenerationService.validateBatchXml(batch);
         }
 
         for (Activity activity : batch.getActivities()) {

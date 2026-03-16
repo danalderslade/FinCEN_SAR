@@ -11,6 +11,8 @@ export function BatchList() {
   const [batches, setBatches] = useState<BatchSummary[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [createError, setCreateError] = useState<string | null>(null)
+  const [creating, setCreating] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
@@ -41,9 +43,17 @@ export function BatchList() {
   }, [load])
 
   async function handleCreate(data: BatchRequest) {
-    const batch = await createBatch(data)
-    setShowForm(false)
-    navigate(`/batches/${batch.id}`)
+    setCreateError(null)
+    setCreating(true)
+    try {
+      const batch = await createBatch(data)
+      setShowForm(false)
+      navigate(`/batches/${batch.id}`)
+    } catch (e: unknown) {
+      setCreateError(e instanceof Error ? e.message : 'Failed to create batch')
+    } finally {
+      setCreating(false)
+    }
   }
 
   async function handleDelete(id: number) {
@@ -84,7 +94,7 @@ export function BatchList() {
 
         {showForm && (
           <div style={{ marginBottom: '1rem' }}>
-            <CreateBatchForm onSubmit={handleCreate} />
+            <CreateBatchForm onSubmit={handleCreate} creating={creating} createError={createError} />
           </div>
         )}
 
@@ -172,7 +182,15 @@ export function BatchList() {
   )
 }
 
-function CreateBatchForm({ onSubmit }: { onSubmit: (data: BatchRequest) => void }) {
+function CreateBatchForm({
+  onSubmit,
+  creating,
+  createError,
+}: {
+  onSubmit: (data: BatchRequest) => void | Promise<void>
+  creating: boolean
+  createError: string | null
+}) {
   const [activityCount, setActivityCount] = useState(1)
   const [partyCount, setPartyCount] = useState(0)
   const [totalAmount, setTotalAmount] = useState('')
@@ -189,6 +207,7 @@ function CreateBatchForm({ onSubmit }: { onSubmit: (data: BatchRequest) => void 
   return (
     <form onSubmit={handleSubmit} className="card" style={{ background: 'rgba(242,226,191,0.3)' }}>
       <h3 style={{ marginBottom: '0.75rem' }}>Create New Batch</h3>
+      {createError && <p className="state-banner error-banner">{createError}</p>}
       <div className="form-grid">
         <div className="form-field">
           <label>Activity Count</label>
@@ -222,8 +241,8 @@ function CreateBatchForm({ onSubmit }: { onSubmit: (data: BatchRequest) => void 
         </div>
       </div>
       <div className="form-actions">
-        <button type="submit" className="btn btn-primary">
-          Create Batch
+        <button type="submit" className="btn btn-primary" disabled={creating}>
+          {creating ? 'Creating…' : 'Create Batch'}
         </button>
       </div>
     </form>

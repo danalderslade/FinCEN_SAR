@@ -32,7 +32,7 @@ app:
   cors:
     allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:5173}
   jwt:
-    secret: ${JWT_SECRET:ThisIsADevOnlySecretKeyThatMustBeAtLeast256BitsLong!ChangeInProd!}
+    secret: ${JWT_SECRET}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
 
 server:
@@ -51,10 +51,10 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: health,info
   endpoint:
     health:
-      show-details: always
+      show-details: never
       probes:
         enabled: true
       group:
@@ -69,5 +69,24 @@ management:
 logging:
   pattern:
     console: "%d{ISO8601} [%thread] %-5level [%X{correlationId:-}] %logger{36} - %msg%n"
+  level:
+    com.fincen.sar: INFO
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+logging:
   level:
     com.fincen.sar: DEBUG

@@ -44,9 +44,17 @@ docker run -d \
 
 ### 2. Run the service
 ```bash
+# Required in default profile
+export JWT_SECRET="replace-with-a-random-48-byte-secret"
+
 mvn spring-boot:run
 ```
 The API starts at **http://localhost:8080/api/v1**
+
+For local troubleshooting with expanded actuator and debug logs:
+```bash
+SPRING_PROFILES_ACTIVE=dev mvn spring-boot:run
+```
 
 ### 3. Run the frontend
 ```bash
@@ -66,6 +74,27 @@ mvn test
 cd web
 npm run build
 ```
+
+### Docker Compose troubleshooting
+
+If `http://localhost:3000` returns `502 Bad Gateway`, the most common local cause is stale Docker Compose state leaving `sar-api` unavailable to the nginx container.
+
+Recreate the stack cleanly from the repo root:
+
+```bash
+docker compose down --remove-orphans
+docker compose up -d --build
+```
+
+Then verify the stack:
+
+```bash
+docker compose ps
+curl http://localhost:8080/api/v1/actuator/health
+curl http://localhost:3000/api/v1/actuator/health
+```
+
+Expected result: both health endpoints return `200`, and the UI loads on `http://localhost:3000`.
 
 ---
 

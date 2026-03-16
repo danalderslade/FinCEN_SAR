@@ -56,6 +56,7 @@ public class ActivityPatchService {
     private final ActivityService                     activityService;
     private final SarMapper                           mapper;
     private final SarValidator                        validator;
+    private final BsaXmlGenerationService             xmlGenerationService;
 
     // ══════════════════════════════════════════════════════════════════════════
     // STEP 1 — Activity Header
@@ -66,7 +67,10 @@ public class ActivityPatchService {
         if (req.getFilingDate()                    != null) a.setFilingDate(req.getFilingDate());
         if (req.getEfilingPriorDocumentNumber()     != null) a.setEfilingPriorDocumentNumber(req.getEfilingPriorDocumentNumber());
         if (req.getFilingInstitutionNoteToFincen()  != null) a.setFilingInstitutionNoteToFincen(req.getFilingInstitutionNoteToFincen());
-        return mapper.toActivityResponse(activityRepo.save(a));
+        Activity saved = activityRepo.save(a);
+        // SARX-shape validation after patch
+        xmlGenerationService.validateBatchXml(saved.getEfilingBatch());
+        return mapper.toActivityResponse(saved);
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -85,7 +89,10 @@ public class ActivityPatchService {
         if (req.getCorrectsAmendsPriorReport() != null) aa.setCorrectsAmendsPriorReport(req.getCorrectsAmendsPriorReport());
         if (req.getContinuingActivityReport()  != null) aa.setContinuingActivityReport(req.getContinuingActivityReport());
         if (req.getJointReportIndicator()      != null) aa.setJointReportIndicator(req.getJointReportIndicator());
-        return mapper.toActivityResponse(activityRepo.save(a));
+        Activity saved = activityRepo.save(a);
+        // SARX-shape validation after patch
+        xmlGenerationService.validateBatchXml(saved.getEfilingBatch());
+        return mapper.toActivityResponse(saved);
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -103,7 +110,10 @@ public class ActivityPatchService {
         } else if (req.getOriginalAttachmentFileName() != null) {
             sd.setOriginalAttachmentFileName(req.getOriginalAttachmentFileName());
         }
-        return mapper.toActivityResponse(activityRepo.save(a));
+        Activity saved = activityRepo.save(a);
+        // SARX-shape validation after patch
+        xmlGenerationService.validateBatchXml(saved.getEfilingBatch());
+        return mapper.toActivityResponse(saved);
     }
 
     // ══════════════════════════════════════════════════════════════════════════

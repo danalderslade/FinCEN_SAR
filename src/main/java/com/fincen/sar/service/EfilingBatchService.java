@@ -15,11 +15,13 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+
 public class EfilingBatchService {
 
     private final EfilingBatchRepository repo;
     private final SarMapper mapper;
     private final SarValidator validator;
+    private final BsaXmlGenerationService xmlGenerationService;
 
     @Transactional
     public EfilingBatchResponse create(EfilingBatchRequest req) {
@@ -33,7 +35,10 @@ public class EfilingBatchService {
         if (req.getAttachmentCount() != null) {
             builder.attachmentCount(req.getAttachmentCount());
         }
-        return mapper.toBatchResponse(repo.save(builder.build()));
+        EfilingBatch batch = builder.build();
+        // SARX-shape validation before save
+        xmlGenerationService.validateBatchXml(batch);
+        return mapper.toBatchResponse(repo.save(batch));
     }
 
     @Transactional(readOnly = true)

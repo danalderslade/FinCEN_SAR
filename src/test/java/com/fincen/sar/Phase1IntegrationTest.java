@@ -49,7 +49,7 @@ public class Phase1IntegrationTest {
     @Test @Order(1)
     void createBatchWithActivity() throws Exception {
         EfilingBatchRequest batchReq = EfilingBatchRequest.builder()
-                .activityCount(1).partyCount(1).build();
+                                .activityCount(1).partyCount(6).build();
 
         String batchBody = mvc.perform(post("/batches")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -60,50 +60,7 @@ public class Phase1IntegrationTest {
 
         batchId = json.readTree(batchBody).get("id").asLong();
 
-        ActivityRequest actReq = ActivityRequest.builder()
-                .seqNum(1L)
-                .filingDate(LocalDate.of(2024, 6, 1))
-                .activityAssociation(ActivityAssociationRequest.builder()
-                        .seqNum(1L).initialReportIndicator(true).build())
-                .parties(List.of(
-                        // Filing Institution (type 30)
-                        PartyRequest.builder()
-                                .seqNum(1L).activityPartyTypeCode((short) 30)
-                                .primaryRegulatorTypeCode((short) 2)
-                                .names(List.of(PartyNameRequest.builder()
-                                        .seqNum(1L).partyNameTypeCode("L")
-                                        .rawPartyFullName("Test Bank").build()))
-                                .addresses(List.of(PartyAddressRequest.builder()
-                                        .seqNum(1L).rawStreetAddress1("100 Main St")
-                                        .rawCity("Washington").rawStateCode("DC")
-                                        .rawZipCode("20001").rawCountryCode("US").build()))
-                                .identifications(List.of(PartyIdentificationRequest.builder()
-                                        .seqNum(1L).partyIdentificationTypeCode((short) 2)
-                                        .partyIdentificationNumber("111222333").build()))
-                                .orgClassifications(List.of(OrgClassificationRequest.builder()
-                                        .seqNum(1L).organizationTypeId((short) 2).build()))
-                                .build(),
-                        // Subject (type 33)
-                        PartyRequest.builder()
-                                .seqNum(2L).activityPartyTypeCode((short) 33)
-                                .names(List.of(PartyNameRequest.builder()
-                                        .seqNum(1L).partyNameTypeCode("L")
-                                        .rawEntityIndividualLastName("Doe")
-                                        .rawIndividualFirstName("John").build()))
-                                .build()
-                ))
-                .suspiciousActivity(SuspiciousActivityRequest.builder()
-                        .seqNum(1L)
-                        .totalSuspiciousAmount(BigDecimal.valueOf(25000))
-                        .suspiciousActivityFromDate(LocalDate.of(2024, 1, 1))
-                        .classifications(List.of(SuspiciousActivityClassificationRequest.builder()
-                                .seqNum(1L).suspiciousActivityTypeId((short) 8)
-                                .suspiciousActivitySubtypeId((short) 807).build()))
-                        .build())
-                .narratives(List.of(NarrativeRequest.builder()
-                        .seqNum(1L).narrativeSequenceNumber((short) 1)
-                        .narrativeText("Test narrative for XML generation.").build()))
-                .build();
+        ActivityRequest actReq = buildCompliantActivity(1L);
 
         String actBody = mvc.perform(post("/batches/" + batchId + "/activities")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -119,10 +76,9 @@ public class Phase1IntegrationTest {
 
     @Test @Order(10)
     void transitionDraftToReview() throws Exception {
-        String body = mvc.perform(post("/batches/" + batchId + "/workflow/review"))
+        mvc.perform(post("/batches/" + batchId + "/workflow/review"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.filingStatus").value("REVIEW"))
-                .andReturn().getResponse().getContentAsString();
+                .andExpect(jsonPath("$.filingStatus").value("REVIEW"));
 
         // Verify activities also transitioned
         String actBody = mvc.perform(get("/activities/" + activityId))
@@ -157,14 +113,14 @@ public class Phase1IntegrationTest {
     @Test @Order(14)
     void cannotTransitionFromAcknowledged() throws Exception {
         mvc.perform(post("/batches/" + batchId + "/workflow/submit"))
-                .andExpect(status().isUnprocessableEntity());
+                                .andExpect(status().is(422));
     }
 
     @Test @Order(15)
     void rejectWorkflow() throws Exception {
         // Create new batch for reject path
         EfilingBatchRequest req = EfilingBatchRequest.builder()
-                .activityCount(1).partyCount(1).build();
+                                .activityCount(1).partyCount(6).build();
         String body = mvc.perform(post("/batches")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(req)))
@@ -205,7 +161,7 @@ public class Phase1IntegrationTest {
         Long b3 = json.readTree(body).get("id").asLong();
 
         mvc.perform(post("/batches/" + b3 + "/workflow/submit"))
-                .andExpect(status().isUnprocessableEntity());
+                .andExpect(status().is(422));
 
         mvc.perform(delete("/batches/" + b3)).andExpect(status().isNoContent());
     }
@@ -216,7 +172,7 @@ public class Phase1IntegrationTest {
     void generateBsaXml() throws Exception {
         // batchId is now ACKNOWLEDGED from test 13 — create a new batch for XML test
         EfilingBatchRequest batchReq = EfilingBatchRequest.builder()
-                .activityCount(1).partyCount(1).build();
+                                .activityCount(1).partyCount(6).build();
         String batchBody = mvc.perform(post("/batches")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(batchReq)))
@@ -224,24 +180,7 @@ public class Phase1IntegrationTest {
                 .andReturn().getResponse().getContentAsString();
         Long xmlBatchId = json.readTree(batchBody).get("id").asLong();
 
-        ActivityRequest actReq = ActivityRequest.builder()
-                .seqNum(1L)
-                .filingDate(LocalDate.of(2024, 7, 1))
-                .parties(List.of(PartyRequest.builder()
-                        .seqNum(1L).activityPartyTypeCode((short) 30)
-                        .names(List.of(PartyNameRequest.builder()
-                                .seqNum(1L).partyNameTypeCode("L")
-                                .rawPartyFullName("XML Test Bank").build()))
-                        .build()))
-                .suspiciousActivity(SuspiciousActivityRequest.builder()
-                        .seqNum(1L)
-                        .totalSuspiciousAmount(BigDecimal.valueOf(10000))
-                        .suspiciousActivityFromDate(LocalDate.of(2024, 1, 1))
-                        .build())
-                .narratives(List.of(NarrativeRequest.builder()
-                        .seqNum(1L).narrativeSequenceNumber((short) 1)
-                        .narrativeText("XML test narrative.").build()))
-                .build();
+        ActivityRequest actReq = buildCompliantActivity(1L);
 
         mvc.perform(post("/batches/" + xmlBatchId + "/activities")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -256,10 +195,13 @@ public class Phase1IntegrationTest {
 
         assertThat(xml).contains("EFilingBatchXML");
         assertThat(xml).contains("<FormTypeCode>SARX</FormTypeCode>");
-        assertThat(xml).contains("<FilingDateText>2024-07-01</FilingDateText>");
-        assertThat(xml).contains("<RawPartyFullName>XML Test Bank</RawPartyFullName>");
-        assertThat(xml).contains("<TotalSuspiciousAmountText>10000</TotalSuspiciousAmountText>");
-        assertThat(xml).contains("<NarrativeText>XML test narrative.</NarrativeText>");
+        assertThat(xml).contains("FilingDateText>20240701</");
+        assertThat(xml).contains("ActivityCount=\"1\"");
+        assertThat(xml).contains("PartyCount=\"6\"");
+        assertThat(xml).contains("<RawPartyFullName>Test Bank</RawPartyFullName>");
+        assertThat(xml).contains("<TotalSuspiciousAmountText>25000</TotalSuspiciousAmountText>");
+        assertThat(xml).contains("<ActivityNarrativeText>Test narrative for compliance.</ActivityNarrativeText>");
+        assertThat(xml).contains("<ActivityNarrativeInformation SeqNum=");
 
         // cleanup
         mvc.perform(delete("/batches/" + xmlBatchId)).andExpect(status().isNoContent());
@@ -269,6 +211,50 @@ public class Phase1IntegrationTest {
     void generateXmlForNonExistentBatchReturns404() throws Exception {
         mvc.perform(get("/batches/999999/xml"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test @Order(22)
+    void generateXmlForSchemaInvalidBatchReturns422() throws Exception {
+        EfilingBatchRequest batchReq = EfilingBatchRequest.builder()
+                .activityCount(1).partyCount(2).build();
+        String batchBody = mvc.perform(post("/batches")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(batchReq)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        Long invalidBatchId = json.readTree(batchBody).get("id").asLong();
+
+        ActivityRequest invalidActivity = ActivityRequest.builder()
+                .seqNum(1L)
+                .filingDate(LocalDate.of(2024, 7, 1))
+                .activityAssociation(ActivityAssociationRequest.builder()
+                        .seqNum(1L).initialReportIndicator(true).build())
+                .parties(List.of(
+                        PartyRequest.builder().seqNum(1L).activityPartyTypeCode((short) 30).build(),
+                        PartyRequest.builder().seqNum(2L).activityPartyTypeCode((short) 33).build()
+                ))
+                .suspiciousActivity(SuspiciousActivityRequest.builder()
+                        .seqNum(1L)
+                        .suspiciousActivityFromDate(LocalDate.of(2024, 1, 1))
+                        .classifications(List.of(SuspiciousActivityClassificationRequest.builder()
+                                .seqNum(1L).suspiciousActivityTypeId((short) 8)
+                                .suspiciousActivitySubtypeId((short) 807).build()))
+                        .build())
+                .narratives(List.of(NarrativeRequest.builder()
+                        .seqNum(1L).narrativeSequenceNumber((short) 1)
+                        .narrativeText("Too few parties for SARX export.").build()))
+                .build();
+
+        mvc.perform(post("/batches/" + invalidBatchId + "/activities")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(invalidActivity)))
+                .andExpect(status().isCreated());
+
+        mvc.perform(get("/batches/" + invalidBatchId + "/xml"))
+                .andExpect(status().is(422))
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("FinCEN SARX schema")));
+
+        mvc.perform(delete("/batches/" + invalidBatchId)).andExpect(status().isNoContent());
     }
 
     // ── OpenAPI Endpoint Test ─────────────────────────────────────────────────
@@ -293,7 +279,26 @@ public class Phase1IntegrationTest {
                         .seqNum(1L).initialReportIndicator(true).build())
                 .parties(List.of(
                         PartyRequest.builder()
-                                .seqNum(1L).activityPartyTypeCode((short) 30)
+                                .seqNum(1L).activityPartyTypeCode((short) 35)
+                                .names(List.of(PartyNameRequest.builder()
+                                        .seqNum(1L).partyNameTypeCode("L")
+                                        .rawPartyFullName("FinCEN Gateway").build()))
+                                .addresses(List.of(PartyAddressRequest.builder()
+                                        .seqNum(1L).rawStreetAddress1("1 Gateway Plaza")
+                                        .rawCity("Washington").rawStateCode("DC")
+                                        .rawZipCode("20001").rawCountryCode("US").build()))
+                                .identifications(List.of(PartyIdentificationRequest.builder()
+                                        .seqNum(1L).partyIdentificationTypeCode((short) 14)
+                                        .partyIdentificationNumber("123456789").build()))
+                                .build(),
+                        PartyRequest.builder()
+                                .seqNum(2L).activityPartyTypeCode((short) 37)
+                                .names(List.of(PartyNameRequest.builder()
+                                        .seqNum(1L).partyNameTypeCode("L")
+                                        .rawPartyFullName("Compliance Officer").build()))
+                                .build(),
+                        PartyRequest.builder()
+                                .seqNum(3L).activityPartyTypeCode((short) 30)
                                 .primaryRegulatorTypeCode((short) 2)
                                 .names(List.of(PartyNameRequest.builder()
                                         .seqNum(1L).partyNameTypeCode("L")
@@ -309,11 +314,33 @@ public class Phase1IntegrationTest {
                                         .seqNum(1L).organizationTypeId((short) 2).build()))
                                 .build(),
                         PartyRequest.builder()
-                                .seqNum(2L).activityPartyTypeCode((short) 33)
+                                .seqNum(4L).activityPartyTypeCode((short) 33)
                                 .names(List.of(PartyNameRequest.builder()
                                         .seqNum(1L).partyNameTypeCode("L")
                                         .rawEntityIndividualLastName("Doe")
                                         .rawIndividualFirstName("John").build()))
+                                .build(),
+                        PartyRequest.builder()
+                                .seqNum(5L).activityPartyTypeCode((short) 34)
+                                .primaryRegulatorTypeCode((short) 2)
+                                .names(List.of(PartyNameRequest.builder()
+                                        .seqNum(1L).partyNameTypeCode("L")
+                                        .rawPartyFullName("Downtown Branch").build()))
+                                .addresses(List.of(PartyAddressRequest.builder()
+                                        .seqNum(1L).rawStreetAddress1("200 Market St")
+                                        .rawCity("Washington").rawStateCode("DC")
+                                        .rawZipCode("20002").rawCountryCode("US").build()))
+                                .identifications(List.of(PartyIdentificationRequest.builder()
+                                        .seqNum(1L).partyIdentificationTypeCode((short) 2)
+                                        .partyIdentificationNumber("999888777").build()))
+                                .orgClassifications(List.of(OrgClassificationRequest.builder()
+                                        .seqNum(1L).organizationTypeId((short) 2).build()))
+                                .build(),
+                        PartyRequest.builder()
+                                .seqNum(6L).activityPartyTypeCode((short) 8)
+                                .names(List.of(PartyNameRequest.builder()
+                                        .seqNum(1L).partyNameTypeCode("L")
+                                        .rawPartyFullName("Assistance Contact").build()))
                                 .build()))
                 .suspiciousActivity(SuspiciousActivityRequest.builder()
                         .seqNum(1L)
