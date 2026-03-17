@@ -1,4 +1,4 @@
-# FinCEN SAR Platform
+# FinCEN SAR Filing Platform
 ## End-User Guide
 
 This guide is written for analysts, reviewers, approvers, and administrators who use the web application day to day.
@@ -21,7 +21,9 @@ If you are looking for developer setup, API details, or deployment steps, use [R
 
 ## Quick Start (2 Minutes)
 
-1. Open the web app: `http://localhost:3000`
+1. Open the web app:
+   - `http://localhost:5173` (local frontend dev server)
+   - `http://localhost:3000` (Docker Compose web container)
 2. Sign in with your assigned account
 3. Open **Batches** from the left menu
 4. Select **+ New Batch**
@@ -87,17 +89,16 @@ Each activity is a single SAR report record.
 
 ### 3. Complete the Activity Wizard
 
-The wizard has 9 sections. You can move between sections as needed.
+The wizard has 8 sections. You can move between sections as needed.
 
 1. **Activity Header**
 2. **Filing Type**
-3. **Support Document**
-4. **Parties**
-5. **Suspicious Activity**
-6. **IP Addresses**
-7. **Cyber Events**
-8. **Assets**
-9. **Narratives**
+3. **Parties**
+4. **Suspicious Activity**
+5. **IP Addresses**
+6. **Cyber Events**
+7. **Assets**
+8. **Narratives**
 
 Good practice:
 
@@ -128,7 +129,7 @@ From the batch detail page, use workflow buttons according to your role:
 | Return to draft | No | Yes | Yes | Yes |
 | Submit to FinCEN | No | No | Yes | Yes |
 | Acknowledge or reject | No | No | Yes | Yes |
-| Manage users | No | No | No | Yes |
+| Manage users (API/admin tooling) | No | No | No | Yes |
 
 If a button is missing or disabled, your account role likely does not allow that action.
 
@@ -238,7 +239,7 @@ What to check:
 
 ### Can I edit submitted filings?
 
-Typically no. Move back to `DRAFT` first (if your role allows), then edit.
+Not directly in normal flow. Return the batch to `DRAFT` first (if your role allows), then edit.
 
 ### Why are workflow buttons missing?
 
@@ -289,4 +290,4 @@ If you are blocked:
 
 - Product: FinCEN SAR Filing Platform
 - Audience: End users (Analyst, Reviewer, Approver, Admin)
-- Version date: March 16, 2026
+- Last updated: March 17, 2026
