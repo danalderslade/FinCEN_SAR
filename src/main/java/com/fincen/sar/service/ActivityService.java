@@ -167,6 +167,7 @@ public class ActivityService {
 
         // ── Narratives ───────────────────────────────────────────────────────
         for (NarrativeRequest nr : req.getNarratives()) {
+            validator.validateNarrativeText(nr.getNarrativeText());
             activity.getNarratives().add(ActivityNarrative.builder()
                     .activity(activity).seqNum(nr.getSeqNum())
                     .narrativeSequenceNumber(nr.getNarrativeSequenceNumber())

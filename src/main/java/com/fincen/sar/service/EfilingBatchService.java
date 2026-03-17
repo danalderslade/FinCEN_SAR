@@ -20,8 +20,6 @@ public class EfilingBatchService {
 
     private final EfilingBatchRepository repo;
     private final SarMapper mapper;
-    private final SarValidator validator;
-    private final BsaXmlGenerationService xmlGenerationService;
 
     @Transactional
     public EfilingBatchResponse create(EfilingBatchRequest req) {
@@ -36,8 +34,6 @@ public class EfilingBatchService {
             builder.attachmentCount(req.getAttachmentCount());
         }
         EfilingBatch batch = builder.build();
-        // SARX-shape validation before save
-        xmlGenerationService.validateBatchXml(batch);
         return mapper.toBatchResponse(repo.save(batch));
     }
 

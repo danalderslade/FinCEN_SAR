@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Enforces FinCEN SAR business rules on the server side.
@@ -42,6 +43,7 @@ public class SarValidator {
     private static final int NARRATIVE_BLOCK_MAX = 4000;
     private static final int NARRATIVE_TOTAL_MAX = 20000;
     private static final int MAX_NARRATIVE_BLOCKS = 5;
+    private static final Pattern AKA_WORD_PATTERN = Pattern.compile("\\bAKA\\b", Pattern.CASE_INSENSITIVE);
 
     private final ActivityNarrativeRepository narrativeRepo;
 
@@ -171,9 +173,7 @@ public class SarValidator {
     public void validateNarrative(Long activityId, Short seqNum, String text, boolean isUpdate) {
         List<String> errors = new ArrayList<>();
 
-        if (text == null || text.isBlank()) {
-            throw new SarValidationException("Narrative text is required");
-        }
+        validateNarrativeText(text);
         if (text.length() > NARRATIVE_BLOCK_MAX) {
             errors.add("Narrative block exceeds maximum length of " + NARRATIVE_BLOCK_MAX
                     + " characters (actual: " + text.length() + ")");
@@ -207,6 +207,18 @@ public class SarValidator {
 
         if (!errors.isEmpty()) {
             throw new SarValidationException(errors);
+        }
+    }
+
+    /**
+     * Validate narrative content that must never be persisted.
+     */
+    public void validateNarrativeText(String text) {
+        if (text == null || text.isBlank()) {
+            throw new SarValidationException("Narrative text is required");
+        }
+        if (AKA_WORD_PATTERN.matcher(text).find()) {
+            throw new SarValidationException("Narrative text cannot contain the word 'AKA'");
         }
     }
 

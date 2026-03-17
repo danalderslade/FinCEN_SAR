@@ -15,7 +15,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -438,6 +437,20 @@ public class SarPatchIntegrationTest {
         mvc.perform(delete("/activities/" + activityId + "/narratives/" + narrativeId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.narratives", hasSize(0)));
+    }
+
+        @Test @Order(19)
+    void narrative_withAkaWord_isRejected() throws Exception {
+        NarrativeRequest req = NarrativeRequest.builder()
+                .seqNum(1L).narrativeSequenceNumber((short) 1)
+                .narrativeText("Subject uses AKA John Doe.")
+                .build();
+
+        mvc.perform(post("/activities/" + activityId + "/narratives")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(req)))
+                .andExpect(status().is(422))
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("cannot contain the word 'AKA'")));
     }
 
     // ══════════════════════════════════════════════════════════════════════════

@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.List;
 
 /**
  * All granular PATCH / add-item / remove-item operations.
@@ -46,7 +45,6 @@ public class ActivityPatchService {
     private final ElectronicAddressRepository         electronicAddressRepo;
     private final PartyAssociationRepository          partyAssocRepo;
     private final BranchPartyRepository               branchPartyRepo;
-    private final BranchAddressRepository             branchAddressRepo;
     private final SuspiciousActivityClassificationRepository sacRepo;
     private final CyberEventIndicatorRepository       cyberRepo;
     private final AssetRepository                     assetRepo;
@@ -56,7 +54,6 @@ public class ActivityPatchService {
     private final ActivityService                     activityService;
     private final SarMapper                           mapper;
     private final SarValidator                        validator;
-    private final BsaXmlGenerationService             xmlGenerationService;
 
     // ══════════════════════════════════════════════════════════════════════════
     // STEP 1 — Activity Header
@@ -68,8 +65,6 @@ public class ActivityPatchService {
         if (req.getEfilingPriorDocumentNumber()     != null) a.setEfilingPriorDocumentNumber(req.getEfilingPriorDocumentNumber());
         if (req.getFilingInstitutionNoteToFincen()  != null) a.setFilingInstitutionNoteToFincen(req.getFilingInstitutionNoteToFincen());
         Activity saved = activityRepo.save(a);
-        // SARX-shape validation after patch
-        xmlGenerationService.validateBatchXml(saved.getEfilingBatch());
         return mapper.toActivityResponse(saved);
     }
 
@@ -90,8 +85,6 @@ public class ActivityPatchService {
         if (req.getContinuingActivityReport()  != null) aa.setContinuingActivityReport(req.getContinuingActivityReport());
         if (req.getJointReportIndicator()      != null) aa.setJointReportIndicator(req.getJointReportIndicator());
         Activity saved = activityRepo.save(a);
-        // SARX-shape validation after patch
-        xmlGenerationService.validateBatchXml(saved.getEfilingBatch());
         return mapper.toActivityResponse(saved);
     }
 
@@ -111,8 +104,6 @@ public class ActivityPatchService {
             sd.setOriginalAttachmentFileName(req.getOriginalAttachmentFileName());
         }
         Activity saved = activityRepo.save(a);
-        // SARX-shape validation after patch
-        xmlGenerationService.validateBatchXml(saved.getEfilingBatch());
         return mapper.toActivityResponse(saved);
     }
 

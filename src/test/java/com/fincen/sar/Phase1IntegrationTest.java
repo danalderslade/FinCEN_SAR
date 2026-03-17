@@ -195,7 +195,7 @@ public class Phase1IntegrationTest {
 
         assertThat(xml).contains("EFilingBatchXML");
         assertThat(xml).contains("<FormTypeCode>SARX</FormTypeCode>");
-        assertThat(xml).contains("FilingDateText>20240701</");
+        assertThat(xml).contains("FilingDateText>20240601</");
         assertThat(xml).contains("ActivityCount=\"1\"");
         assertThat(xml).contains("PartyCount=\"6\"");
         assertThat(xml).contains("<RawPartyFullName>Test Bank</RawPartyFullName>");

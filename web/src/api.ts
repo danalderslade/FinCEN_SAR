@@ -61,16 +61,21 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
   }
 
   const res = await fetch(url, { ...init, headers })
-  if (res.status === 401) {
-    window.dispatchEvent(new CustomEvent('auth-error', { detail: 401 }))
-    throw new ApiError(401, 'Session expired — please log in again.')
+  if (res.status === 401 || res.status === 403) {
+    window.dispatchEvent(new CustomEvent('auth-error', { detail: res.status }))
+    throw new ApiError(
+      res.status,
+      res.status === 401
+        ? 'Session expired — please log in again.'
+        : 'Access denied — please sign in again.',
+    )
   }
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText)
-    let message = text
+    let message = text || res.statusText || `Request failed (${res.status})`
     try {
       const json = JSON.parse(text)
-      message = json.message || text
+      message = json.message || message
     } catch { /* use raw text */ }
     throw new ApiError(res.status, message)
   }

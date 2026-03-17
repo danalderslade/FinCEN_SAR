@@ -233,4 +233,72 @@ public class SarApiIntegrationTest {
         mvc.perform(get("/batches/999999"))
                 .andExpect(status().isNotFound());
     }
+
+    @Test @Order(12)
+    void createActivity_rejectsNarrativeContainingAka() throws Exception {
+        EfilingBatchRequest batchReq = EfilingBatchRequest.builder()
+                .activityCount(1).partyCount(2).build();
+
+        String batchBody = mvc.perform(post("/batches")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(batchReq)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+
+        Long localBatchId = json.readTree(batchBody).get("id").asLong();
+
+        ActivityRequest req = ActivityRequest.builder()
+                .seqNum(1L)
+                .filingDate(LocalDate.of(2024, 6, 1))
+                .activityAssociation(ActivityAssociationRequest.builder()
+                        .seqNum(1L).initialReportIndicator(true).build())
+                .parties(List.of(
+                        PartyRequest.builder()
+                                .seqNum(1L).activityPartyTypeCode((short) 30)
+                                .primaryRegulatorTypeCode((short) 2)
+                                .names(List.of(PartyNameRequest.builder()
+                                        .seqNum(1L).partyNameTypeCode("L")
+                                        .rawPartyFullName("First National Bank").build()))
+                                .addresses(List.of(PartyAddressRequest.builder()
+                                        .seqNum(1L).rawStreetAddress1("100 Main St")
+                                        .rawCity("Washington").rawStateCode("DC")
+                                        .rawZipCode("20001").rawCountryCode("US").build()))
+                                .identifications(List.of(PartyIdentificationRequest.builder()
+                                        .seqNum(1L).partyIdentificationTypeCode((short) 4)
+                                        .partyIdentificationNumber("123456789").build()))
+                                .orgClassifications(List.of(OrgClassificationRequest.builder()
+                                        .seqNum(1L).organizationTypeId((short) 2).build()))
+                                .build(),
+                        PartyRequest.builder()
+                                .seqNum(2L).activityPartyTypeCode((short) 33)
+                                .names(List.of(PartyNameRequest.builder()
+                                        .seqNum(1L).partyNameTypeCode("L")
+                                        .rawEntityIndividualLastName("Doe")
+                                        .rawIndividualFirstName("John").build()))
+                                .build()
+                ))
+                .suspiciousActivity(SuspiciousActivityRequest.builder()
+                        .seqNum(1L)
+                        .suspiciousActivityFromDate(LocalDate.of(2024, 1, 1))
+                        .classifications(List.of(SuspiciousActivityClassificationRequest.builder()
+                                .seqNum(1L)
+                                .suspiciousActivityTypeId((short) 8)
+                                .suspiciousActivitySubtypeId((short) 807)
+                                .build()))
+                        .build())
+                .narratives(List.of(NarrativeRequest.builder()
+                        .seqNum(1L).narrativeSequenceNumber((short) 1)
+                        .narrativeText("Narrative includes AKA and should be rejected.")
+                        .build()))
+                .build();
+
+        mvc.perform(post("/batches/" + localBatchId + "/activities")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(req)))
+                        .andExpect(status().is(422))
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("cannot contain the word 'AKA'")));
+
+        mvc.perform(delete("/batches/" + localBatchId))
+                .andExpect(status().isNoContent());
+    }
 }
